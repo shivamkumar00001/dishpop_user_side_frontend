@@ -21,7 +21,10 @@ export default function MenuPage() {
 
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery);
+
+  // 🔑 Debounced search
+  const debouncedSearch = useDebounce(searchQuery, 500);
+  const isSearching = Boolean(debouncedSearch);
 
   const {
     items,
@@ -30,21 +33,22 @@ export default function MenuPage() {
     hasMore,
     initialLoading,
     isFetching,
-    networkError,
+    initialLoadError,
+    hasResolvedOnce,
     retry,
-  } = usePaginatedMenu(restaurantId, activeCategory, debouncedSearch);
+  } = usePaginatedMenu(
+    restaurantId,
+    activeCategory,
+    debouncedSearch
+  );
 
-  // Auto categories fallback
   const autoCategories = [
     "All",
-    ...new Set(
-      items
-        .map((i) => i.category?.trim() || "All")
-        .filter((c) => c !== "All")
-    ),
+    ...new Set(items.map(i => i.category?.trim()).filter(Boolean)),
   ];
 
-  const finalCategories = categories.length > 1 ? categories : autoCategories;
+  const finalCategories =
+    categories.length > 1 ? categories : autoCategories;
 
   const [cart, setCart] = useState([]);
   const [animateCount, setAnimateCount] = useState(false);
@@ -54,11 +58,12 @@ export default function MenuPage() {
 
   const loaderRef = useRef(null);
 
+  // Load cart once
   useEffect(() => {
-    const Set = () =>{
-      setCart(JSON.parse(localStorage.getItem("cart")) || []);
-    }
-    Set();
+   const Set = ()=>{
+       setCart(JSON.parse(localStorage.getItem("cart")) || []);
+   }
+   Set();
   }, []);
 
   const updateCart = (updated) => {
@@ -80,14 +85,16 @@ export default function MenuPage() {
   };
 
   const increaseQty = (id) =>
-    updateCart(
-      cart.map((i) => (i._id === id ? { ...i, qty: i.qty + 1 } : i))
-    );
+    updateCart(cart.map((i) =>
+      i._id === id ? { ...i, qty: i.qty + 1 } : i
+    ));
 
   const decreaseQty = (id) =>
     updateCart(
       cart
-        .map((i) => (i._id === id ? { ...i, qty: i.qty - 1 } : i))
+        .map((i) =>
+          i._id === id ? { ...i, qty: i.qty - 1 } : i
+        )
         .filter((i) => i.qty > 0)
     );
 
@@ -96,25 +103,36 @@ export default function MenuPage() {
     setShowArViewer(true);
   };
 
-  // Infinite Scroll
+  // 🔥 Infinite scroll (disabled during search)
   useEffect(() => {
-    if (!loaderRef.current) return;
+    if (!loaderRef.current || isSearching) return;
 
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasMore && !isFetching) {
           fetchPage();
         }
       },
       { rootMargin: "200px" }
     );
 
-    obs.observe(loaderRef.current);
-    return () => obs.disconnect();
-  }, [fetchPage, hasMore, isFetching]);
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [fetchPage, hasMore, isFetching, isSearching]);
 
-  if (networkError) return <RetryScreen retry={retry} />;
+  // ❗ Retry only for FIRST load
+  if (initialLoadError && items.length === 0 && !isSearching) {
+    return <RetryScreen retry={retry} />;
+  }
+
+  // ❗ Loader only for FIRST load
   if (initialLoading) return <MenuLoader />;
+
+  // ✅ Stable empty state
+  const showEmptyState =
+    hasResolvedOnce &&
+    items.length === 0 &&
+    !initialLoadError;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 pb-20">
@@ -125,7 +143,10 @@ export default function MenuPage() {
         animateCount={animateCount}
       />
 
-      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <SearchBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
       <CategorySelector
         categories={finalCategories}
@@ -140,9 +161,25 @@ export default function MenuPage() {
         handleArView={openArViewer}
       />
 
-      <div ref={loaderRef}>
-        <InfiniteLoader hasMore={hasMore} isFetching={isFetching} />
-      </div>
+      {showEmptyState && (
+        <div className="text-center text-gray-500 mt-10">
+          <p className="text-lg font-semibold">No items found</p>
+          <p className="text-sm">
+            {isSearching
+              ? "Try a different search term"
+              : "Try a different category"}
+          </p>
+        </div>
+      )}
+
+      {!isSearching && (
+        <div ref={loaderRef}>
+          <InfiniteLoader
+            hasMore={hasMore}
+            isFetching={isFetching}
+          />
+        </div>
+      )}
 
       <ItemBottomSheet
         item={selectedItem}
@@ -151,9 +188,8 @@ export default function MenuPage() {
         cart={cart}
         increaseQty={increaseQty}
         decreaseQty={decreaseQty}
-        addToCart={addToCart}   // ⭐ ADD THIS
+        addToCart={addToCart}
       />
-
 
       <ARViewer
         item={arItem}

@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import api from "../lib/api";   // ⭐ use Vite env-based API instance
+import api from "../lib/api";
+import axios from "axios";
 
-export default function usePaginatedMenu(restaurantId, category, search, LIMIT = 20) {
+export default function usePaginatedMenu(
+  restaurantId,
+  category,
+  search,
+  LIMIT = 20
+) {
+  const isSearching = Boolean(search);
 
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -11,16 +18,17 @@ export default function usePaginatedMenu(restaurantId, category, search, LIMIT =
 
   const [initialLoading, setInitialLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const [networkError, setNetworkError] = useState(false);
+
+  const [initialLoadError, setInitialLoadError] = useState(false);
+  const [hasResolvedOnce, setHasResolvedOnce] = useState(false);
 
   const abortRef = useRef(null);
+  const firstLoadDoneRef = useRef(false);
 
-  // ⭐ FETCH PAGE
   const fetchPage = useCallback(async () => {
-    if (isFetching || !hasMore) return;
+    if (isFetching || !hasMore || !restaurantId) return;
 
     setIsFetching(true);
-    setNetworkError(false);
 
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
@@ -28,76 +36,106 @@ export default function usePaginatedMenu(restaurantId, category, search, LIMIT =
 
     try {
       const res = await api.get(`/api/menu/${restaurantId}`, {
-        params: { limit: LIMIT, skip, category, search },
+        params: {
+          limit: LIMIT,
+          skip,
+          category,
+          search: search || undefined,
+        },
         signal: controller.signal,
       });
 
       const data = res.data?.data || [];
 
-      // No items for this restaurant
-      if (skip === 0 && data.length === 0) {
-        setNetworkError(true);
-        setInitialLoading(false);
+      // ✅ ALWAYS replace items on first page (even empty)
+      if (skip === 0) {
+        setItems(data);
+      } else {
+        setItems((prev) => [...prev, ...data]);
+      }
+
+      setSkip((prev) => prev + data.length);
+      setHasResolvedOnce(true);
+
+      setHasMore(data.length === LIMIT);
+
+      if (!categories.length && res.data?.categories?.length) {
+        setCategories(["All", ...res.data.categories]);
+      }
+
+      setInitialLoadError(false);
+    } catch (err) {
+      if (
+        err.code === "ERR_CANCELED" ||
+        err.name === "CanceledError" ||
+        axios.isCancel(err)
+      ) {
         return;
       }
 
-      // ⭐ Load categories once
-      if (categories.length === 0) {
-        if (res.data.categories?.length > 0) {
-          setCategories(["All", ...res.data.categories]);
-        } else if (res.data.allItems) {
-          const allCats = new Set(
-            res.data.allItems.map(i => i.category?.trim()).filter(Boolean)
-          );
-          setCategories(["All", ...allCats]);
-        }
+      setHasResolvedOnce(true);
+
+      if (!isSearching && !firstLoadDoneRef.current) {
+        setInitialLoadError(true);
       }
-
-      setItems(prev => [...prev, ...data]);
-      setSkip(prev => prev + data.length);
-
-      if (data.length < LIMIT) setHasMore(false);
-
-    } catch (err) {
-      if (!api.isCancel?.(err)) {
-        console.log("Fetch error:", err);
-        setNetworkError(true);
-      }
-
     } finally {
       setIsFetching(false);
-      setInitialLoading(false);
-    }
-  }, [restaurantId, category, search, skip, isFetching, hasMore, categories.length]);
 
-  // Reset items when category or search changes
+      if (!firstLoadDoneRef.current) {
+        setInitialLoading(false);
+        firstLoadDoneRef.current = true;
+      }
+    }
+  }, [
+    restaurantId,
+    category,
+    search,
+    skip,
+    hasMore,
+    isFetching,
+    categories.length,
+    LIMIT,
+    isSearching,
+  ]);
+
+  // 🔥 IMPORTANT FIX: clear items on search/category change
   useEffect(() => {
-    setItems([]);
+    if (!restaurantId) return;
+
+    if (abortRef.current) abortRef.current.abort();
+
+    setItems([]);                // ✅ clear stale items
     setSkip(0);
     setHasMore(true);
-    setInitialLoading(false);
-  }, [category, search]);
+    setHasResolvedOnce(false);   // allow empty state
+  }, [category, search, restaurantId]);
 
-  // Reset everything when restaurant changes
+  // 🔁 Hard reset on restaurant change
   useEffect(() => {
+    if (!restaurantId) return;
+
+    firstLoadDoneRef.current = false;
     setItems([]);
     setCategories([]);
     setSkip(0);
     setHasMore(true);
+    setHasResolvedOnce(false);
+    setInitialLoadError(false);
     setInitialLoading(true);
-    setNetworkError(false);
   }, [restaurantId]);
 
-  // Auto-fetch on mount & changes
   useEffect(() => {
-    fetchPage();
-  }, [fetchPage]);
+    if (skip === 0) fetchPage();
+  }, [fetchPage, skip]);
 
   const retry = () => {
+    firstLoadDoneRef.current = false;
     setItems([]);
     setSkip(0);
     setHasMore(true);
-    fetchPage();
+    setHasResolvedOnce(false);
+    setInitialLoadError(false);
+    setInitialLoading(true);
   };
 
   return {
@@ -107,7 +145,8 @@ export default function usePaginatedMenu(restaurantId, category, search, LIMIT =
     hasMore,
     initialLoading,
     isFetching,
-    networkError,
+    initialLoadError,
+    hasResolvedOnce,
     retry,
   };
 }
