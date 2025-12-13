@@ -10,7 +10,7 @@ import ItemBottomSheet from "../components/menu/ItemBottomSheet";
 import MenuLoader from "../components/menu/MenuLoader";
 import RetryScreen from "../components/menu/RetryScreen";
 import InfiniteLoader from "../components/menu/InfiniteLoader";
-
+import { incrementARStat } from "../services/arStats.service";
 import useDebounce from "../hooks/useDebounce";
 import usePaginatedMenu from "../hooks/usePaginatedMenu";
 
@@ -98,10 +98,17 @@ export default function MenuPage() {
         .filter((i) => i.qty > 0)
     );
 
-  const openArViewer = (item) => {
-    setArItem(item);
-    setShowArViewer(true);
-  };
+ const openArViewer = (item) => {
+  setArItem(item);
+  setShowArViewer(true);
+
+  // 🔥 Track AR view click
+  incrementARStat({
+    restaurantId,
+    itemName: item.name,
+    imageUrl: item.imageUrl || item.thumbnailUrl,
+  });
+};
 
   // 🔥 Infinite scroll (disabled during search)
   useEffect(() => {
