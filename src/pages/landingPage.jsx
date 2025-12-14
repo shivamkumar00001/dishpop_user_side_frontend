@@ -1,15 +1,31 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import api from "../lib/api";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [animate, setAnimate] = useState(false);
+  const [restaurantName, setRestaurantName] = useState("");
   const params = useParams();
 
   useEffect(() => {
     const t = setTimeout(() => setAnimate(true), 50);
     return () => clearTimeout(t);
   }, []);
+
+  // ✅ FETCH RESTAURANT NAME (ONLY ADDITION)
+  useEffect(() => {
+    async function fetchRestaurant() {
+      try {
+        const res = await api.get(`/api/owner/${params.id}/landing`);
+        setRestaurantName(res.data.restaurantName);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    if (params.id) fetchRestaurant();
+  }, [params.id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex flex-col overflow-x-hidden">
@@ -18,7 +34,6 @@ export default function LandingPage() {
       <nav className="w-full py-3 bg-white shadow-sm">
         <div className="max-w-screen-xl mx-auto px-3 sm:px-6 flex justify-between items-center">
 
-          {/* FIXED SVG IMAGE */}
           <img
             src="/logo.svg"
             alt="DishPop Logo"
@@ -46,6 +61,11 @@ export default function LandingPage() {
               (animate ? "u-slideUp" : "u-preAnimate")
             }
           >
+            {/* ✅ DYNAMIC RESTAURANT NAME */}
+            <h1 className="text-sm sm:text-base text-green-700 font-semibold mb-2">
+              Welcome to {restaurantName || "our restaurant"}
+            </h1>
+
             <h2 className="text-2xl sm:text-4xl font-extrabold text-green-900 leading-snug sm:leading-tight break-words">
               Fresh. Flavorful.
               <br />
@@ -66,7 +86,6 @@ export default function LandingPage() {
                 (animate ? "u-fadeInDelay" : "")
               }
             >
-              {/* Browse Menu */}
               <button
                 onClick={() => navigate(`/menu/${params.id}`)}
                 className="bg-green-600 text-white px-5 py-3 rounded-lg text-sm sm:text-lg 
@@ -75,7 +94,6 @@ export default function LandingPage() {
                 Browse Menu
               </button>
 
-              {/* View Reviews Button */}
               <button
                 onClick={() => navigate(`/reviews/${params.id}`)}
                 className="bg-white text-green-700 border border-green-300 px-5 py-3 rounded-lg text-sm sm:text-lg 
@@ -100,7 +118,7 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer className="py-3 text-center text-gray-500 text-xs sm:text-sm px-2 break-words">
-        © 2025 DishPop — Crafted with ❤️ 
+        © 2025 DishPop — Crafted with ❤️
       </footer>
     </div>
   );
