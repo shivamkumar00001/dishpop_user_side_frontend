@@ -62,9 +62,18 @@ export default function LandingPage() {
             }
           >
             {/* ✅ DYNAMIC RESTAURANT NAME */}
-            <h1 className="text-sm sm:text-base text-green-700 font-semibold mb-2">
-              Welcome to {restaurantName || "our restaurant"}
+                    <div className="mb-4">
+            <span className="inline-block text-xs sm:text-sm tracking-wide uppercase text-green-900 font-semibold">
+              Welcome to
+            </span>
+
+            <h1 className="mt-1 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-green-900 leading-tight break-words">
+              {restaurantName || "Our Restaurant"}
             </h1>
+
+            <div className="mt-2 w-16 h-1 bg-green-500 rounded-full mx-auto lg:mx-0"></div>
+          </div>
+
 
             <h2 className="text-2xl sm:text-4xl font-extrabold text-green-900 leading-snug sm:leading-tight break-words">
               Fresh. Flavorful.
