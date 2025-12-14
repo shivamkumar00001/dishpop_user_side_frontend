@@ -8,7 +8,7 @@ import api from "../lib/api";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { id: username } = useParams();
+  const { id: username } = useParams(); // ✅ username
 
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,8 +21,8 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCart(savedCart);
+    const saved = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(saved);
   }, []);
 
   const totalAmount = cart.reduce(
@@ -37,69 +37,72 @@ export default function CheckoutPage() {
     }));
   };
 
-  const handleCheckout = async () => {
-    if (!username) return alert("Invalid restaurant link");
-    if (!details.name || !details.tableNumber)
-      return alert("Please fill required fields");
-    if (cart.length === 0) return alert("Your cart is empty");
+ const handleCheckout = async () => {
+  if (!username) return alert("Invalid restaurant link");
+  if (!details.name || !details.tableNumber)
+    return alert("Please fill all required fields");
+  if (cart.length === 0) return alert("Your cart is empty");
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const payload = {
-        customerName: details.name.trim(),
-        phoneNumber: details.phone || "",
-        tableNumber: Number(details.tableNumber),
-        description: details.description || "",
-        items: cart.map(item => ({
-          itemId: item._id,
-          name: item.name,
-          qty: Number(item.qty),
-          price: Number(item.price),
-          imageUrl: item.imageUrl || ""
-        }))
-      };
+  try {
+    const payload = {
+      customerName: details.name.trim(),
+      phoneNumber: details.phone ? String(details.phone) : "",
+      tableNumber: Number(details.tableNumber),
+      description: details.description || "",
+      items: cart.map(item => ({
+        itemId: item._id,
+        name: item.name,
+        qty: Number(item.qty),
+        price: Number(item.price),
+        imageUrl: item.imageUrl || ""
+      }))
+    };
 
-      // ✅ Backend call
-      await api.post(`/api/checkout/${username}`, payload);
+    // ✅ Send to backend
+    await api.post(`/api/checkout/${username}`, payload);
 
-      // ✅ Build frontend order
-      const newOrder = {
-        id: Date.now(),
-        ...payload,
-        totalAmount,
-        timestamp: Date.now(),
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000
-      };
+    // ✅ BUILD LOCAL ORDER OBJECT
+    const newOrder = {
+      id: Date.now(), // frontend order id
+      customerName: payload.customerName,
+      phoneNumber: payload.phoneNumber,
+      tableNumber: payload.tableNumber,
+      description: payload.description,
+      items: payload.items,
+      totalAmount,
+      timestamp: Date.now(),
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hrs
+    };
 
-      // ✅ Save order locally
-      const existingOrders =
-        JSON.parse(localStorage.getItem("orders")) || [];
+    // ✅ SAVE TO LOCAL STORAGE
+    const existingOrders =
+      JSON.parse(localStorage.getItem("orders")) || [];
 
-      localStorage.setItem(
-        "orders",
-        JSON.stringify([newOrder, ...existingOrders])
-      );
+    localStorage.setItem(
+      "orders",
+      JSON.stringify([newOrder, ...existingOrders])
+    );
 
-      localStorage.removeItem("cart");
-      navigate(`/greet/${username}`);
-    } catch (err) {
-      alert(err.response?.data?.message || "Checkout failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // ✅ CLEAR CART & REDIRECT
+    localStorage.removeItem("cart");
+    navigate(`/greet/${username}`);
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Checkout failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 pb-24">
+    <div className="min-h-screen bg-green-50 pb-20">
       <CheckoutHeader navigate={navigate} username={username} />
 
-      <div className="max-w-6xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <CustomerDetails
-          details={details}
-          handleChange={handleChange}
-        />
-
+      <div className="max-w-screen-xl mx-auto px-4 mt-6 flex flex-col lg:flex-row gap-8">
+        <CustomerDetails details={details} handleChange={handleChange} />
         <OrderSummary
           cart={cart}
           totalAmount={totalAmount}
