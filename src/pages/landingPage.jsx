@@ -161,7 +161,7 @@ export default function LandingPage() {
       </div>
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur shadow-sm">
+      <nav className="sticky top-0 z-50  bg-white/80 backdrop-blur shadow-sm">
         <div className="max-w-screen-xl mx-auto px-6 py-4 flex justify-between">
           <img src="/logo.svg" alt="DishPop" className="w-14 h-14" />
           <button
@@ -190,21 +190,6 @@ export default function LandingPage() {
               </motion.h1>
             )}
           </AnimatePresence>
-
-          {/* <div className="flex items-center gap-2 mt-4">
-            {[...Array(5)].map((_, i) => (
-              <StarIconSolid
-                key={i}
-                className={`w-5 h-5 ${
-                  i < Math.floor(rating)
-                    ? "text-amber-500"
-                    : "text-gray-300"
-                }`}
-              />
-            ))}
-            <span className="font-semibold">{rating}</span>
-            <span className="text-gray-500">({reviewCount})</span>
-          </div> */}
 
           <div className="grid grid-cols-2 gap-4 mt-8">
             {features.map((f) => (

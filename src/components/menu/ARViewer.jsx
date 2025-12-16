@@ -30,16 +30,34 @@ export default function ARViewer({ item, isOpen, onClose }) {
         {hasAR ? (
           <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md">
             <model-viewer
-              src={item.arModelUrl}
-              ios-src={item.iosModelUrl}
-              ar
-              ar-modes="webxr scene-viewer quick-look"
-              camera-controls
-              auto-rotate
-              autoplay
-              environment-image="neutral"
-              style={{ width: "100%", height: "300px" }}
-            ></model-viewer>
+                src={item.arModelUrl}
+                ios-src={item.iosModelUrl}
+                ar
+                ar-modes="webxr scene-viewer quick-look"
+                camera-controls
+                auto-rotate
+                autoplay
+                environment-image="neutral"
+
+                /* 🔧 CAMERA & SIZE FIX */
+                bounds="tight"
+                camera-orbit="0deg 75deg 2.5m"
+                field-of-view="30deg"
+                scale="0.8 0.8 0.8"
+
+                /* 🌟 REALISTIC LIGHTING */
+                shadow-intensity="1"
+                shadow-softness="0.6"
+                exposure="1.1"
+
+                style={{
+                  width: "100%",
+                  height: "280px",
+                  background: "#f9fafb",
+                  borderRadius: "12px",
+          }}
+        ></model-viewer>
+
           </div>
         ) : (
           /* ⭐ FALLBACK FOR NO AR AVAILABLE */
