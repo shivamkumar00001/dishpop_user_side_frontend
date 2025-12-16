@@ -29,55 +29,53 @@ export default function ARViewer({ item, isOpen, onClose }) {
         {/* ⭐ IF AR MODEL EXISTS */}
         {hasAR ? (
           <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md">
-           <model-viewer
+         <model-viewer
               src={item.arModelUrl}
               ios-src={item.iosModelUrl}
               ar
               ar-modes="webxr scene-viewer quick-look"
-              camera-controls
+              camera-controls={false}
               auto-rotate={false}
               autoplay
               environment-image="neutral"
 
-              /* 🚨 HARD SIZE FIX */
-              disable-zoom
-              interaction-prompt="none"
+              /* 🧨 KIRI HARD FIX */
               bounds="legacy"
-              camera-orbit="0deg 85deg 4.5m"
-              min-camera-orbit="auto auto 4.5m"
-              max-camera-orbit="auto auto 4.5m"
-              field-of-view="20deg"
-              scale="0.45 0.45 0.45"
+              interaction-prompt="none"
+              disable-zoom
+              camera-orbit="0deg 90deg 6m"
+              min-camera-orbit="auto auto 6m"
+              max-camera-orbit="auto auto 6m"
+              field-of-view="18deg"
+              scale="0.35 0.35 0.35"
 
-              /* 🌟 LIGHTING */
-              shadow-intensity="0.8"
-              shadow-softness="0.7"
+              /* 🌟 FOOD LIGHTING */
+              shadow-intensity="0.75"
+              shadow-softness="0.75"
               exposure="1.05"
 
               style={{
                 width: "100%",
-                height: "260px",
-                background: "#f9fafb",
-                borderRadius: "12px",
+                height: "240px",
+                background: "#f8fafc",
+                borderRadius: "14px",
                 position: "relative",
               }}
             >
-              {/* 🚀 HIGH-CONVERSION AR BUTTON */}
+              {/* 🚀 MOBILE AR CTA */}
               <button
                 slot="ar-button"
-                className="absolute bottom-4 left-1/2 -translate-x-1/2
-                          flex items-center gap-2
+                className="absolute bottom-3 left-1/2 -translate-x-1/2
                           px-6 py-3
                           rounded-full
                           bg-gradient-to-r from-green-600 to-emerald-500
-                          text-white font-semibold text-sm
+                          text-white text-sm font-semibold
                           shadow-lg shadow-green-500/30
-                          active:scale-95
-                          transition-transform"
+                          active:scale-95 transition-transform"
               >
-                📱 View Dish in Your Space
+                📱 View Dish on Your Table
               </button>
-</model-viewer>
+            </model-viewer>
 
 
           </div>
