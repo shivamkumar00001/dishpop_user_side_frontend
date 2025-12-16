@@ -29,7 +29,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
         {/* ⭐ IF AR MODEL EXISTS */}
         {hasAR ? (
           <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md">
-            <model-viewer
+           <model-viewer
                 src={item.arModelUrl}
                 ios-src={item.iosModelUrl}
                 ar
@@ -45,7 +45,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 field-of-view="30deg"
                 scale="0.8 0.8 0.8"
 
-                /* 🌟 REALISTIC LIGHTING */
+                /* 🌟 LIGHTING */
                 shadow-intensity="1"
                 shadow-softness="0.6"
                 exposure="1.1"
@@ -55,8 +55,26 @@ export default function ARViewer({ item, isOpen, onClose }) {
                   height: "280px",
                   background: "#f9fafb",
                   borderRadius: "12px",
-          }}
-        ></model-viewer>
+                  position: "relative",
+                }}
+              >
+                {/* 🚀 CUSTOM AR BUTTON */}
+                <button
+                  slot="ar-button"
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 
+                            flex items-center gap-2
+                            px-6 py-3
+                            rounded-full
+                            bg-gradient-to-r from-green-600 to-emerald-500
+                            text-white font-semibold text-sm
+                            shadow-lg shadow-green-500/30
+                            active:scale-95
+                            animate-pulse"
+                >
+                  📱 View Dish in Your Space
+                </button>
+              </model-viewer>
+
 
           </div>
         ) : (
