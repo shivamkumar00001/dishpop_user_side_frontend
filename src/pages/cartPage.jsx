@@ -9,19 +9,19 @@ export default function CartPage() {
   const navigate = useNavigate();
   const params = useParams();
   const [cart, setCart] = useState([]);
+  const cartKey = `cart_${params.id}`;
 
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("cart")) || [];
-    const Set = ()=>{
-      setCart(saved);
-    }
-    Set();
-  }, []);
+ useEffect(() => {
+  const Set = ()=>{
+    setCart(JSON.parse(localStorage.getItem(cartKey)) || []);
+  }
+  Set();
+}, [cartKey]);
 
-  const updateCart = (updated) => {
-    setCart(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
-  };
+const updateCart = (updated) => {
+  setCart(updated);
+  localStorage.setItem(cartKey, JSON.stringify(updated));
+};
 
   const increaseQty = (_id) => {
     updateCart(

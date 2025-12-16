@@ -19,11 +19,12 @@ export default function CheckoutPage() {
     tableNumber: "",
     description: ""
   });
-
+  const cartKey = `cart_${username}`;
+  const ordersKey = `orders_${username}`;
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("cart")) || [];
+    const saved = JSON.parse(localStorage.getItem(cartKey)) || [];
     setCart(saved);
-  }, []);
+  }, [cartKey]);
 
   const totalAmount = cart.reduce(
     (sum, item) => sum + item.price * item.qty,
@@ -78,15 +79,15 @@ export default function CheckoutPage() {
 
     //  SAVE TO LOCAL STORAGE
     const existingOrders =
-      JSON.parse(localStorage.getItem("orders")) || [];
+      JSON.parse(localStorage.getItem(ordersKey)) || [];
 
     localStorage.setItem(
-      "orders",
+      ordersKey,
       JSON.stringify([newOrder, ...existingOrders])
     );
 
     // CLEAR CART & REDIRECT
-    localStorage.removeItem("cart");
+    localStorage.removeItem(cartKey);
     navigate(`/greet/${username}`);
 
   } catch (err) {

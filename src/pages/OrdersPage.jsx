@@ -5,9 +5,9 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const params = useParams();
   const navigate = useNavigate();
-
+  const ordersKey = `orders_${params.id}`;
   useEffect(() => {
-    let saved = JSON.parse(localStorage.getItem("orders")) || [];
+    let saved = JSON.parse(localStorage.getItem(ordersKey)) || [];
 
     // 🔥 Auto-delete expired orders
     const now = Date.now();
@@ -15,14 +15,14 @@ export default function OrdersPage() {
 
     // If any orders expired, update localStorage
     if (validOrders.length !== saved.length) {
-      localStorage.setItem("orders", JSON.stringify(validOrders));
+      localStorage.setItem(ordersKey, JSON.stringify(validOrders));
     }
 
     const Set = ()=>{
       setOrders(validOrders);
     }
     Set();
-  }, []);
+  }, [ordersKey]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 p-6">

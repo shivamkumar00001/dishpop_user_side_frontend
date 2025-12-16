@@ -57,19 +57,22 @@ export default function MenuPage() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   const loaderRef = useRef(null);
+  
+  
+  const cartKey = `cart_${restaurantId}`;
 
   // Load cart once
-  useEffect(() => {
-   const Set = ()=>{
-       setCart(JSON.parse(localStorage.getItem("cart")) || []);
-   }
-   Set();
-  }, []);
+    useEffect(() => {
+     const Set = () =>{
+       setCart(JSON.parse(localStorage.getItem(cartKey)) || []);
+     }
+     Set()
+    }, [cartKey]);
 
-  const updateCart = (updated) => {
-    setCart(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
-  };
+const updateCart = (updated) => {
+  setCart(updated);
+  localStorage.setItem(cartKey, JSON.stringify(updated));
+};
 
   const addToCart = (item) => {
     const exists = cart.find((i) => i._id === item._id);
