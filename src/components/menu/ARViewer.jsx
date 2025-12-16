@@ -30,50 +30,54 @@ export default function ARViewer({ item, isOpen, onClose }) {
         {hasAR ? (
           <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md">
            <model-viewer
-                src={item.arModelUrl}
-                ios-src={item.iosModelUrl}
-                ar
-                ar-modes="webxr scene-viewer quick-look"
-                camera-controls
-                auto-rotate
-                autoplay
-                environment-image="neutral"
+              src={item.arModelUrl}
+              ios-src={item.iosModelUrl}
+              ar
+              ar-modes="webxr scene-viewer quick-look"
+              camera-controls
+              auto-rotate={false}
+              autoplay
+              environment-image="neutral"
 
-                /* 🔧 CAMERA & SIZE FIX */
-                bounds="tight"
-                camera-orbit="0deg 75deg 2.5m"
-                field-of-view="30deg"
-                scale="0.8 0.8 0.8"
+              /* 🚨 HARD SIZE FIX */
+              disable-zoom
+              interaction-prompt="none"
+              bounds="legacy"
+              camera-orbit="0deg 85deg 4.5m"
+              min-camera-orbit="auto auto 4.5m"
+              max-camera-orbit="auto auto 4.5m"
+              field-of-view="20deg"
+              scale="0.45 0.45 0.45"
 
-                /* 🌟 LIGHTING */
-                shadow-intensity="1"
-                shadow-softness="0.6"
-                exposure="1.1"
+              /* 🌟 LIGHTING */
+              shadow-intensity="0.8"
+              shadow-softness="0.7"
+              exposure="1.05"
 
-                style={{
-                  width: "100%",
-                  height: "280px",
-                  background: "#f9fafb",
-                  borderRadius: "12px",
-                  position: "relative",
-                }}
+              style={{
+                width: "100%",
+                height: "260px",
+                background: "#f9fafb",
+                borderRadius: "12px",
+                position: "relative",
+              }}
+            >
+              {/* 🚀 HIGH-CONVERSION AR BUTTON */}
+              <button
+                slot="ar-button"
+                className="absolute bottom-4 left-1/2 -translate-x-1/2
+                          flex items-center gap-2
+                          px-6 py-3
+                          rounded-full
+                          bg-gradient-to-r from-green-600 to-emerald-500
+                          text-white font-semibold text-sm
+                          shadow-lg shadow-green-500/30
+                          active:scale-95
+                          transition-transform"
               >
-                {/* 🚀 CUSTOM AR BUTTON */}
-                <button
-                  slot="ar-button"
-                  className="absolute bottom-4 left-1/2 -translate-x-1/2 
-                            flex items-center gap-2
-                            px-6 py-3
-                            rounded-full
-                            bg-gradient-to-r from-green-600 to-emerald-500
-                            text-white font-semibold text-sm
-                            shadow-lg shadow-green-500/30
-                            active:scale-95
-                            animate-pulse"
-                >
-                  📱 View Dish in Your Space
-                </button>
-              </model-viewer>
+                📱 View Dish in Your Space
+              </button>
+</model-viewer>
 
 
           </div>
