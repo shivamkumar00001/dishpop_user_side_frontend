@@ -8,10 +8,8 @@ import CartSummary from "../components/cart/CartSummary";
 export default function CartPage() {
   const navigate = useNavigate();
   const params = useParams();
-
   const [cart, setCart] = useState([]);
 
-  // LOAD CART
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("cart")) || [];
     const Set = ()=>{
@@ -26,20 +24,21 @@ export default function CartPage() {
   };
 
   const increaseQty = (_id) => {
-    const updated = cart.map((item) =>
-      item._id === _id ? { ...item, qty: item.qty + 1 } : item
+    updateCart(
+      cart.map((item) =>
+        item._id === _id ? { ...item, qty: item.qty + 1 } : item
+      )
     );
-    updateCart(updated);
   };
 
   const decreaseQty = (_id) => {
-    const updated = cart
-      .map((item) =>
-        item._id === _id ? { ...item, qty: item.qty - 1 } : item
-      )
-      .filter((item) => item.qty > 0);
-
-    updateCart(updated);
+    updateCart(
+      cart
+        .map((item) =>
+          item._id === _id ? { ...item, qty: item.qty - 1 } : item
+        )
+        .filter((item) => item.qty > 0)
+    );
   };
 
   const totalAmount = cart.reduce(
@@ -48,32 +47,30 @@ export default function CartPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-green-100">
-
-      {/* HEADER */}
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex flex-col">
+      
       <CartHeader cart={cart} navigate={navigate} params={params} />
 
-      {/* CONTENT */}
-      <div className="flex-1 max-w-screen-xl mx-auto px-4 mt-6 pb-32">
-
+      <div className="flex-1 max-w-screen-xl mx-auto px-4 py-8">
         {cart.length === 0 ? (
           <div className="mt-24 text-center">
-            <p className="text-gray-500 text-lg font-semibold">
-              Your cart is empty
+            <p className="text-xl font-semibold text-gray-600">
+              Your cart is empty 🍃
             </p>
 
             <button
               onClick={() => navigate(`/menu/${params.id}`)}
-              className="mt-5 bg-green-600 hover:bg-green-700 transition px-7 py-3 text-white rounded-xl shadow-md"
+              className="mt-6 bg-green-600 hover:bg-green-700 transition
+              px-8 py-3 text-white rounded-xl shadow-md"
             >
-              Add Items
+              Browse Menu
             </button>
           </div>
         ) : (
-          <div className="space-y-5">
-
-            {/* All Cart Items */}
-            <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-4 space-y-4">
+          <div className="grid lg:grid-cols-3 gap-6">
+            
+            {/* ITEMS */}
+            <div className="lg:col-span-2 space-y-4">
               {cart.map((item) => (
                 <CartItem
                   key={item._id}
@@ -84,19 +81,19 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* Summary Card */}
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-4">
+            {/* SUMMARY (Sticky on desktop) */}
+            <div className="lg:sticky lg:top-24 h-fit">
               <CartSummary
                 totalAmount={totalAmount}
                 navigate={navigate}
                 params={params}
               />
             </div>
-
           </div>
         )}
       </div>
 
+      {/* Footer */}
       <footer className="text-center text-gray-500 py-6">
         © 2025 DishPop — Order Happiness 🍽️
       </footer>

@@ -1,31 +1,31 @@
 export default function CartSummary({ totalAmount, navigate, params }) {
   return (
-    <div className="mt-6 bg-white p-5 rounded-xl shadow-md">
-
-      <div className="flex justify-between text-lg font-bold text-green-700">
-        <span>Total Amount:</span>
-        <span>₹ {totalAmount}</span>
+    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-5">
+      
+      <div className="flex justify-between items-center text-lg font-semibold">
+        <span className="text-gray-600">Total Amount</span>
+        <span className="text-green-700 text-2xl font-bold">
+          ₹ {totalAmount}
+        </span>
       </div>
 
-      <div className="mt-5 flex flex-col sm:flex-row gap-4">
-        
+      <div className="flex flex-col sm:flex-row gap-4">
         <button
           onClick={() => navigate(`/menu/${params.id}`)}
-          className="w-full bg-green-200 text-green-800 py-3 rounded-lg font-semibold
-          hover:bg-green-300 transition"
+          className="flex-1 bg-green-100 text-green-800 py-3 rounded-xl 
+          font-semibold hover:bg-green-200 transition"
         >
-          Add More Items
+          + Add More Items
         </button>
 
         <button
           onClick={() => navigate(`/checkout/${params.id}`)}
-          className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold
-          hover:bg-green-700 transition shadow-md"
+          className="flex-1 bg-green-600 text-white py-3 rounded-xl 
+          font-semibold hover:bg-green-700 transition shadow-md"
         >
-          Proceed to Checkout
+          Proceed to Checkout →
         </button>
       </div>
-      
     </div>
   );
 }

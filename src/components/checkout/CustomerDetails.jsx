@@ -1,24 +1,66 @@
 export default function CustomerDetails({ details, handleChange }) {
   return (
-    <div className="w-full lg:w-2/3 bg-white p-6 rounded-xl shadow">
-      <h2 className="text-xl font-bold mb-4">Your Details</h2>
+    <div className="bg-white rounded-2xl shadow-lg p-6">
+      <h2 className="text-xl font-bold text-green-800 mb-6">
+        Customer Details
+      </h2>
 
-      <div className="space-y-4">
-        <input name="name" placeholder="Name" value={details.name}
-          onChange={handleChange} className="w-full p-3 border rounded" />
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="text-sm font-semibold text-gray-600">
+            Name *
+          </label>
+          <input
+            name="name"
+            value={details.name}
+            onChange={handleChange}
+            placeholder="Your name"
+            className="mt-1 w-full p-3 rounded-xl border
+            focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+        </div>
 
-        <input name="phone" placeholder="Phone" value={details.phone}
-          onChange={handleChange} className="w-full p-3 border rounded" />
+        <div>
+          <label className="text-sm font-semibold text-gray-600">
+            Phone (optional)
+          </label>
+          <input
+            name="phone"
+            value={details.phone}
+            onChange={handleChange}
+            placeholder="Phone number"
+            className="mt-1 w-full p-3 rounded-xl border
+            focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+        </div>
 
-        <input name="tableNumber" placeholder="Table Number"
-          value={details.tableNumber}
-          onChange={handleChange}
-          className="w-full p-3 border rounded" />
+        <div>
+          <label className="text-sm font-semibold text-gray-600">
+            Table Number *
+          </label>
+          <input
+            name="tableNumber"
+            value={details.tableNumber}
+            onChange={handleChange}
+            placeholder="Table no."
+            className="mt-1 w-full p-3 rounded-xl border
+            focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+        </div>
 
-        <textarea name="description" placeholder="Notes (optional)"
-          value={details.description}
-          onChange={handleChange}
-          className="w-full p-3 border rounded h-28" />
+        <div className="sm:col-span-2">
+          <label className="text-sm font-semibold text-gray-600">
+            Notes for kitchen (optional)
+          </label>
+          <textarea
+            name="description"
+            value={details.description}
+            onChange={handleChange}
+            placeholder="Less spicy, no onion, etc."
+            className="mt-1 w-full p-3 rounded-xl border h-28 resize-none
+            focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+        </div>
       </div>
     </div>
   );

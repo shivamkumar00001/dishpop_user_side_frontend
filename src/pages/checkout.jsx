@@ -8,7 +8,7 @@ import api from "../lib/api";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { id: username } = useParams(); // ✅ username
+  const { id: username } = useParams(); // username
 
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,10 +60,10 @@ export default function CheckoutPage() {
       }))
     };
 
-    // ✅ Send to backend
+    // Send to backend
     await api.post(`/api/checkout/${username}`, payload);
 
-    // ✅ BUILD LOCAL ORDER OBJECT
+    // BUILD LOCAL ORDER OBJECT
     const newOrder = {
       id: Date.now(), // frontend order id
       customerName: payload.customerName,
@@ -76,7 +76,7 @@ export default function CheckoutPage() {
       expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hrs
     };
 
-    // ✅ SAVE TO LOCAL STORAGE
+    //  SAVE TO LOCAL STORAGE
     const existingOrders =
       JSON.parse(localStorage.getItem("orders")) || [];
 
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       JSON.stringify([newOrder, ...existingOrders])
     );
 
-    // ✅ CLEAR CART & REDIRECT
+    // CLEAR CART & REDIRECT
     localStorage.removeItem("cart");
     navigate(`/greet/${username}`);
 
