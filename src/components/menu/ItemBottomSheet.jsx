@@ -11,34 +11,34 @@ export default function ItemBottomSheet({
 }) {
   if (!isOpen || !item) return null;
 
-  /* ---------------- STATE (FRESH EVERY OPEN) ---------------- */
+  /* ---------------- STATE ---------------- */
   const [selectedVariant, setSelectedVariant] = useState(
-  item.defaultVariant || item.variants?.[0]
-);
-
-
-  // { [groupId]: addon | null }
+    item.defaultVariant || item.variants?.[0]
+  );
   const [selectedAddOns, setSelectedAddOns] = useState({});
   const [qty, setQty] = useState(1);
 
-  /* 🔥 RESET ON EVERY OPEN */
+  /* 🔥 DRAG STATE */
+  const [startY, setStartY] = useState(null);
+  const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  /* 🔥 RESET ON OPEN */
   useEffect(() => {
     if (!isOpen) return;
-
-    setSelectedVariant(item.defaultVariant);
+    setSelectedVariant(item.defaultVariant || item.variants?.[0]);
     setSelectedAddOns({});
     setQty(1);
+    setTranslateY(0);
   }, [isOpen, item.id]);
 
-  /* ---------------- FLATTEN ADDONS ---------------- */
+  /* ---------------- PRICE ---------------- */
   const flatAddOns = Object.values(selectedAddOns).filter(Boolean);
 
   const totalPrice =
-    qty === 0
-      ? 0
-      : calculateItemPrice(selectedVariant, flatAddOns, qty);
+    qty === 0 ? 0 : calculateItemPrice(selectedVariant, flatAddOns, qty);
 
-  /* ---------------- RADIO SELECT ---------------- */
+  /* ---------------- ADDON SELECT ---------------- */
   const selectAddon = (group, addon) => {
     setSelectedAddOns(prev => ({
       ...prev,
@@ -55,74 +55,107 @@ export default function ItemBottomSheet({
 
   /* ---------------- ADD TO CART ---------------- */
   const handleAddToCart = () => {
-  if (!isValid || qty === 0) return;
+    if (!isValid || qty === 0) return;
 
-  const variantPrice = Number(selectedVariant?.price ?? 0);
+    const variantPrice = Number(selectedVariant?.price ?? 0);
+    const addonsTotal = flatAddOns.reduce(
+      (sum, a) => sum + Number(a?.price ?? 0),
+      0
+    );
 
-  const addonsTotal = flatAddOns.reduce(
-    (sum, a) => sum + Number(a?.price ?? 0),
-    0
-  );
+    const unitPrice = variantPrice + addonsTotal;
 
-  const unitPrice = variantPrice + addonsTotal;
+    const newCartItem = {
+      id: crypto.randomUUID(),
+      itemId: item.id,
+      name: item.name,
+      imageUrl: item.imageUrl || item.thumbnailUrl,
+      qty,
+      variant: {
+        id: selectedVariant.id,
+        name: selectedVariant.name,
+        price: variantPrice,
+      },
+      addons: flatAddOns.map(a => ({
+        id: a.id,
+        name: a.name,
+        price: Number(a.price),
+      })),
+      unitPrice,
+      totalPrice: unitPrice * qty,
+    };
 
-  const newCartItem = {
-    id: crypto.randomUUID(), // unique cart row
-    itemId: item.id,
-    name: item.name,
-    imageUrl: item.imageUrl || item.thumbnailUrl,
-
-    qty,
-
-    variant: {
-      id: selectedVariant.id,
-      name: selectedVariant.name,
-      price: variantPrice,
-    },
-
-    addons: flatAddOns.map(a => ({
-      id: a.id,
-      name: a.name,
-      price: Number(a.price),
-    })),
-
-    // 🔥 THESE TWO FIX EVERYTHING
-    unitPrice,
-    totalPrice: unitPrice * qty,
+    const updated = [...cart, newCartItem];
+    setCart(updated);
+    localStorage.setItem(cartKey, JSON.stringify(updated));
+    onClose();
   };
 
-  const updated = [...cart, newCartItem];
+  /* ---------------- DRAG HANDLERS ---------------- */
+  const handleTouchStart = e => {
+    setStartY(e.touches[0].clientY);
+    setIsDragging(true);
+  };
 
-  setCart(updated);
-  localStorage.setItem(cartKey, JSON.stringify(updated));
-  onClose();
-};
+  const handleTouchMove = e => {
+    if (!isDragging || startY === null) return;
 
-  /* ---------------- UI (DESIGN UNCHANGED) ---------------- */
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+
+    if (diff > 0) {
+      // 👇 resistance after 200px
+      const resistance =
+        diff > 200 ? 200 + (diff - 200) * 0.3 : diff;
+      setTranslateY(resistance);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+
+    if (translateY > 140) {
+      onClose();
+    } else {
+      setTranslateY(0);
+    }
+
+    setStartY(null);
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
       <div className="absolute inset-0" onClick={onClose} />
 
+      {/* BOTTOM SHEET */}
       <div
-        className="relative w-full max-h-[92vh] bg-white rounded-t-[28px]
-                   overflow-y-auto animate-slideUp"
+        className="relative w-full h-[90vh] bg-white rounded-t-[28px]
+                   flex flex-col"
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: isDragging ? "none" : "transform 0.25s ease-out",
+        }}
         onClick={e => e.stopPropagation()}
       >
-        {/* HANDLE */}
-        <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3" />
+        {/* DRAG HANDLE */}
+        <div
+          className="shrink-0"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2" />
+        </div>
 
-        {/* IMAGE */}
-        <div className="px-5 pt-4">
+        {/* SCROLLABLE CONTENT */}
+        <div className="flex-1 overflow-y-auto px-5 pb-32">
           <img
             src={item.imageUrl || item.thumbnailUrl}
             onError={e => (e.currentTarget.src = "/food-placeholder.png")}
             alt={item.name}
             className="w-full h-44 object-cover rounded-2xl shadow-md"
           />
-        </div>
 
-        {/* CONTENT */}
-        <div className="px-5 pb-28">
           <h2 className="mt-4 text-2xl font-bold text-gray-900">
             {item.name}
           </h2>
@@ -138,11 +171,11 @@ export default function ItemBottomSheet({
             <div className="grid grid-cols-2 gap-3">
               {item.variants.map(v => (
                 <button
-                  key={v.name}
+                  key={v.id}
                   onClick={() => setSelectedVariant(v)}
                   className={`p-3 rounded-xl border text-left
                     ${
-                      selectedVariant.name === v.name
+                      selectedVariant.id === v.id
                         ? "border-green-600 bg-green-50"
                         : "border-gray-200"
                     }`}
@@ -154,7 +187,7 @@ export default function ItemBottomSheet({
             </div>
           </section>
 
-          {/* ADDONS – RADIO */}
+          {/* ADDONS */}
           {item.addOnGroups.map(group => (
             <section key={group.id} className="mt-7">
               <h3 className="font-semibold text-gray-800 mb-2">
@@ -180,14 +213,13 @@ export default function ItemBottomSheet({
                             : "border-gray-200"
                         }`}
                     >
-                      <div className="flex flex-col">
-                        <span>{addon.name}</span>
-                        <span className="text-sm text-gray-500">
+                      <div>
+                        <p>{addon.name}</p>
+                        <p className="text-sm text-gray-500">
                           ₹ {addon.price}
-                        </span>
+                        </p>
                       </div>
 
-                      {/* RADIO */}
                       <div
                         className={`w-5 h-5 rounded-full border flex items-center justify-center
                           ${
@@ -208,9 +240,8 @@ export default function ItemBottomSheet({
           ))}
         </div>
 
-        {/* FOOTER */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t
-                        px-5 py-4 flex items-center justify-between">
+        {/* FIXED FOOTER */}
+        <div className="shrink-0 fixed bottom-0 left-0 right-0 bg-white border-t px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setQty(q => Math.max(1, q - 1))}
