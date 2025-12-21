@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { calculateItemPrice } from "../../utils/calcPrice.js";
 
@@ -12,51 +12,60 @@ export default function ItemBottomSheet({
 }) {
   if (!item) return null;
 
-  /* ✅ START CLEAN */
+  /* ===================== STATE ===================== */
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedAddOns, setSelectedAddOns] = useState({});
   const [qty, setQty] = useState(1);
 
-  /* ✅ SET DEFAULT ONLY WHEN SHEET OPENS */
-useLayoutEffect(() => {
-  if (!isOpen) return;
+  /* ===================== INIT ===================== */
+  useEffect(() => {
+    if (!isOpen) return;
 
-  const defaultVariant =
-    item.defaultVariant || item.variants?.[0] || null;
+    const defaultVariant =
+      item.defaultVariant || item.variants?.[0] || null;
 
-  setSelectedVariant(defaultVariant);
-  setSelectedAddOns({});
-  setQty(1);
-}, [isOpen, item?.id]);
+    setSelectedVariant(defaultVariant);
+    setSelectedAddOns({});
+    setQty(1);
+  }, [isOpen, item?.id]);
 
-  /* 💰 PRICE (NO FLICKER) */
+  /* ===================== ADDONS ===================== */
+  const selectAddon = (groupId, addon) => {
+    setSelectedAddOns((prev) => ({
+      ...prev,
+      [groupId]:
+        prev[groupId]?.id === addon.id ? null : addon,
+    }));
+  };
+
+  /* ===================== VARIANT ===================== */
+  const selectVariant = (variant) => {
+    setSelectedVariant(variant);
+  };
+
+  /* ===================== PRICE ===================== */
   const flatAddOns = useMemo(
     () => Object.values(selectedAddOns).filter(Boolean),
     [selectedAddOns]
   );
 
   const totalPrice = useMemo(
-    () => calculateItemPrice(selectedVariant, flatAddOns, qty),
+    () =>
+      calculateItemPrice(selectedVariant, flatAddOns, qty),
     [selectedVariant, flatAddOns, qty]
   );
 
-  /* ➕ ADDON SELECT */
-  const selectAddon = (group, addon) => {
-    setSelectedAddOns((prev) => ({
-      ...prev,
-      [group.id]:
-        prev[group.id]?.id === addon.id ? null : addon,
-    }));
-  };
+  /* ===================== VALIDATION ===================== */
+  const isValid = useMemo(() => {
+    if (!selectedVariant) return false;
+    return item.addOnGroups?.every(
+      (g) => !g.required || selectedAddOns[g.id]
+    );
+  }, [item.addOnGroups, selectedAddOns, selectedVariant]);
 
-  /* ✅ VALIDATION */
-  const isValid = item.addOnGroups.every(
-    (g) => !g.required || selectedAddOns[g.id]
-  );
-
-  /* 🛒 ADD TO CART */
+  /* ===================== ADD TO CART ===================== */
   const handleAddToCart = () => {
-    if (!isValid || !selectedVariant) return;
+    if (!isValid) return;
 
     const unitPrice =
       Number(selectedVariant.price || 0) +
@@ -77,12 +86,13 @@ useLayoutEffect(() => {
       totalPrice: unitPrice * qty,
     };
 
-    const updated = [...cart, newItem];
-    setCart(updated);
-    localStorage.setItem(cartKey, JSON.stringify(updated));
+    const updatedCart = [...cart, newItem];
+    setCart(updatedCart);
+    localStorage.setItem(cartKey, JSON.stringify(updatedCart));
     onClose();
   };
 
+  /* ===================== UI ===================== */
   return (
     <motion.div
       className="fixed inset-0 z-50 bg-black/50"
@@ -92,15 +102,14 @@ useLayoutEffect(() => {
       onClick={onClose}
     >
       <motion.div
-        key={item.id} // ✅ important: isolates state per item
-        className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[28px] flex flex-col touch-pan-y"
+        className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[32px] flex flex-col"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        transition={{ type: "spring", stiffness: 260, damping: 30 }}
+        transition={{ type: "spring", damping: 26, stiffness: 300 }}
         drag="y"
-        dragConstraints={{ top: 0 }}
-        dragElastic={0.15}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ bottom: 0.25 }}
         dragMomentum={false}
         onDragEnd={(e, info) => {
           if (info.offset.y > 120 || info.velocity.y > 600) {
@@ -114,119 +123,157 @@ useLayoutEffect(() => {
           <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
         </div>
 
-        {/* SCROLL */}
-        <div className="flex-1 overflow-y-auto px-5 pb-32 overscroll-contain scroll-smooth">
+        {/* CONTENT */}
+        <div className="flex-1 overflow-y-auto px-5 pb-36">
           <img
             src={item.imageUrl || item.thumbnailUrl}
             alt={item.name}
             className="w-full h-44 object-cover rounded-2xl"
           />
 
-          <h2 className="mt-4 text-2xl font-bold">{item.name}</h2>
-          <p className="text-sm text-gray-600">{item.description}</p>
+          <h2 className="mt-4 text-2xl font-bold">
+            {item.name}
+          </h2>
+          <p className="text-sm text-gray-600">
+            {item.description}
+          </p>
 
-          {/* ✅ VARIANTS */}
+          {/* ================= VARIANTS ================= */}
           {item.variants?.length > 0 && (
             <div className="mt-6">
-              <h3 className="font-semibold mb-3">
+              <h3 className="font-semibold mb-4">
                 Choose a variant
               </h3>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 {item.variants.map((v) => {
-                  const isSelected =
-                    selectedVariant?.id === v.id;
+                  const selected =
+                    selectedVariant?.name === v.name;
 
                   return (
-                    <label
-                      key={v.id}
-                      onClick={() => setSelectedVariant(v)}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                        isSelected
-                          ? "border-green-600 bg-green-50"
-                          : "border-gray-200 hover:border-gray-300"
+                    <motion.div
+                      key={v.name}
+                      onClick={() => selectVariant(v)}
+                      whileTap={{ scale: 0.96 }}
+                      className={`relative p-4 rounded-2xl border cursor-pointer transition-all ${
+                        selected
+                          ? "border-green-600 bg-green-50 ring-2 ring-green-500 shadow-md scale-[1.02]"
+                          : "border-gray-200 bg-white hover:shadow-sm"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="variant"
-                          checked={isSelected}
-                          readOnly
-                          className="accent-green-600"
-                        />
-                        <div>
-                          <p className="font-medium">{v.name}</p>
-                          <p className="text-sm">₹ {v.price}</p>
-                        </div>
-                      </div>
-                    </label>
+                      <div
+                        className={`absolute top-3 right-3 w-4 h-4 rounded-full border ${
+                          selected
+                            ? "border-green-600 bg-green-600"
+                            : "border-gray-300"
+                        }`}
+                      />
+
+                      <p className="font-semibold">
+                        {v.name}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        ₹ {v.price}
+                      </p>
+                    </motion.div>
                   );
                 })}
               </div>
             </div>
           )}
 
-          {/* ADDONS */}
+          {/* ================= ADDONS ================= */}
           {item.addOnGroups?.map((group) => (
             <div key={group.id} className="mt-6">
-              <h3 className="font-semibold">
+              <h3 className="font-semibold mb-3">
                 {group.name}
                 {group.required && (
-                  <span className="text-red-500 ml-1">*</span>
+                  <span className="text-red-500 ml-1">
+                    *
+                  </span>
                 )}
               </h3>
 
-              {group.addOns.map((addon) => {
-                const selected =
-                  selectedAddOns[group.id]?.id === addon.id;
+              <div className="space-y-3">
+                {group.addOns.map((addon) => {
+                  const selected =
+                    selectedAddOns[group.id]?.id ===
+                    addon.id;
 
-                return (
-                  <div
-                    key={addon.id}
-                    onClick={() => selectAddon(group, addon)}
-                    className={`mt-3 p-4 rounded-xl border flex justify-between cursor-pointer ${
-                      selected
-                        ? "border-green-600 bg-green-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <span>{addon.name}</span>
-                    <span>₹ {addon.price}</span>
-                  </div>
-                );
-              })}
+                  return (
+                    <motion.div
+                      key={addon.id}
+                      onClick={() =>
+                        selectAddon(group.id, addon)
+                      }
+                      whileTap={{ scale: 0.97 }}
+                      className={`flex justify-between items-center p-4 rounded-2xl border cursor-pointer transition-all ${
+                        selected
+                          ? "border-green-600 bg-green-50 ring-1 ring-green-400"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                            selected
+                              ? "bg-green-600 border-green-600"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {selected && (
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          )}
+                        </div>
+
+                        <span className="font-medium">
+                          {addon.name}
+                        </span>
+                      </div>
+
+                      <span className="text-sm text-gray-700">
+                        + ₹{addon.price}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           ))}
         </div>
 
         {/* FOOTER */}
-        <div className="sticky bottom-0 bg-white border-t px-5 py-4 flex justify-between items-center">
+        <div className="sticky bottom-0 bg-white/80 backdrop-blur-xl border-t px-5 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="w-10 h-10 rounded-full bg-gray-200"
+              onClick={() =>
+                setQty((q) => Math.max(1, q - 1))
+              }
+              className="w-11 h-11 rounded-full bg-gray-100 text-xl"
             >
               −
             </button>
 
-            <span className="font-semibold">{qty}</span>
+            <span className="font-semibold text-lg">
+              {qty}
+            </span>
 
             <button
               onClick={() => setQty((q) => q + 1)}
-              className="w-10 h-10 rounded-full bg-green-600 text-white"
+              className="w-11 h-11 rounded-full bg-green-600 text-white text-xl shadow-md"
             >
               +
             </button>
           </div>
 
-          <button
-            disabled={!isValid || !selectedVariant}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            disabled={!isValid}
             onClick={handleAddToCart}
-            className="px-7 py-3 rounded-2xl bg-green-600 text-white font-semibold disabled:opacity-40"
+            className="px-8 py-3 rounded-2xl bg-green-600 text-white font-semibold text-lg shadow-lg disabled:opacity-40"
           >
             Add ₹{totalPrice}
-          </button>
+          </motion.button>
         </div>
       </motion.div>
     </motion.div>
