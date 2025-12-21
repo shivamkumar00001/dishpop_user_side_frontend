@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { calculateItemPrice } from "../../utils/calcPrice.js";
 
@@ -12,32 +12,35 @@ export default function ItemBottomSheet({
 }) {
   if (!item) return null;
 
-  /* ✅ Store FULL variant object */
+  /* ✅ START CLEAN */
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedAddOns, setSelectedAddOns] = useState({});
   const [qty, setQty] = useState(1);
 
-  /* 🔄 Initialize on mount and when item changes */
-  useEffect(() => {
-    if (isOpen && item) {
-      const defaultVariant =
-        item.defaultVariant || item.variants?.[0] || null;
+  /* ✅ SET DEFAULT ONLY WHEN SHEET OPENS */
+useLayoutEffect(() => {
+  if (!isOpen) return;
 
-      setSelectedVariant(defaultVariant);
-      setSelectedAddOns({});
-      setQty(1);
-    }
-  }, [isOpen, item?.id]);
+  const defaultVariant =
+    item.defaultVariant || item.variants?.[0] || null;
 
-  /* 💰 Price */
-  const flatAddOns = Object.values(selectedAddOns).filter(Boolean);
-  const totalPrice = calculateItemPrice(
-    selectedVariant,
-    flatAddOns,
-    qty
+  setSelectedVariant(defaultVariant);
+  setSelectedAddOns({});
+  setQty(1);
+}, [isOpen, item?.id]);
+
+  /* 💰 PRICE (NO FLICKER) */
+  const flatAddOns = useMemo(
+    () => Object.values(selectedAddOns).filter(Boolean),
+    [selectedAddOns]
   );
 
-  /* ➕ Select addon (single select per group) */
+  const totalPrice = useMemo(
+    () => calculateItemPrice(selectedVariant, flatAddOns, qty),
+    [selectedVariant, flatAddOns, qty]
+  );
+
+  /* ➕ ADDON SELECT */
   const selectAddon = (group, addon) => {
     setSelectedAddOns((prev) => ({
       ...prev,
@@ -46,12 +49,12 @@ export default function ItemBottomSheet({
     }));
   };
 
-  /* ✅ Validate required add-ons */
+  /* ✅ VALIDATION */
   const isValid = item.addOnGroups.every(
     (g) => !g.required || selectedAddOns[g.id]
   );
 
-  /* 🛒 Add to cart */
+  /* 🛒 ADD TO CART */
   const handleAddToCart = () => {
     if (!isValid || !selectedVariant) return;
 
@@ -89,14 +92,15 @@ export default function ItemBottomSheet({
       onClick={onClose}
     >
       <motion.div
-        className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[28px] flex flex-col"
+        key={item.id} // ✅ important: isolates state per item
+        className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[28px] flex flex-col touch-pan-y"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        transition={{ type: "spring", stiffness: 260, damping: 30 }}
         drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ bottom: 0.25 }}
+        dragConstraints={{ top: 0 }}
+        dragElastic={0.15}
         dragMomentum={false}
         onDragEnd={(e, info) => {
           if (info.offset.y > 120 || info.velocity.y > 600) {
@@ -106,12 +110,12 @@ export default function ItemBottomSheet({
         onClick={(e) => e.stopPropagation()}
       >
         {/* DRAG HANDLE */}
-        <div className="py-3 cursor-grab active:cursor-grabbing">
+        <div className="py-3">
           <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
         </div>
 
-        {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto px-5 pb-32">
+        {/* SCROLL */}
+        <div className="flex-1 overflow-y-auto px-5 pb-32 overscroll-contain scroll-smooth">
           <img
             src={item.imageUrl || item.thumbnailUrl}
             alt={item.name}
@@ -119,9 +123,7 @@ export default function ItemBottomSheet({
           />
 
           <h2 className="mt-4 text-2xl font-bold">{item.name}</h2>
-          <p className="text-sm text-gray-600">
-            {item.description}
-          </p>
+          <p className="text-sm text-gray-600">{item.description}</p>
 
           {/* ✅ VARIANTS */}
           {item.variants?.length > 0 && (
@@ -133,14 +135,13 @@ export default function ItemBottomSheet({
               <div className="grid grid-cols-2 gap-3">
                 {item.variants.map((v) => {
                   const isSelected =
-                    selectedVariant !== null && 
-                    selectedVariant.id === v.id;
+                    selectedVariant?.id === v.id;
 
                   return (
-                  <label
+                    <label
                       key={v.id}
                       onClick={() => setSelectedVariant(v)}
-                      className={`p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         isSelected
                           ? "border-green-600 bg-green-50"
                           : "border-gray-200 hover:border-gray-300"
@@ -152,45 +153,39 @@ export default function ItemBottomSheet({
                           name="variant"
                           checked={isSelected}
                           readOnly
-                          className="accent-green-600 w-4 h-4"
+                          className="accent-green-600"
                         />
                         <div>
-                          <p className="font-medium text-left">{v.name}</p>
-                          <p className="text-sm text-left">₹ {v.price}</p>
+                          <p className="font-medium">{v.name}</p>
+                          <p className="text-sm">₹ {v.price}</p>
                         </div>
                       </div>
                     </label>
-
                   );
                 })}
               </div>
             </div>
           )}
 
-          {/* ➕ ADD-ONS */}
+          {/* ADDONS */}
           {item.addOnGroups?.map((group) => (
             <div key={group.id} className="mt-6">
               <h3 className="font-semibold">
                 {group.name}
                 {group.required && (
-                  <span className="text-red-500 ml-1">
-                    *
-                  </span>
+                  <span className="text-red-500 ml-1">*</span>
                 )}
               </h3>
 
               {group.addOns.map((addon) => {
                 const selected =
-                  selectedAddOns[group.id]?.id ===
-                  addon.id;
+                  selectedAddOns[group.id]?.id === addon.id;
 
                 return (
                   <div
                     key={addon.id}
-                    onClick={() =>
-                      selectAddon(group, addon)
-                    }
-                    className={`mt-3 p-4 rounded-xl border flex justify-between cursor-pointer transition-all ${
+                    onClick={() => selectAddon(group, addon)}
+                    className={`mt-3 p-4 rounded-xl border flex justify-between cursor-pointer ${
                       selected
                         ? "border-green-600 bg-green-50"
                         : "border-gray-200 hover:border-gray-300"
@@ -205,14 +200,12 @@ export default function ItemBottomSheet({
           ))}
         </div>
 
-        {/* FIXED FOOTER */}
+        {/* FOOTER */}
         <div className="sticky bottom-0 bg-white border-t px-5 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button
-              onClick={() =>
-                setQty((q) => Math.max(1, q - 1))
-              }
-              className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center"
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              className="w-10 h-10 rounded-full bg-gray-200"
             >
               −
             </button>
@@ -221,7 +214,7 @@ export default function ItemBottomSheet({
 
             <button
               onClick={() => setQty((q) => q + 1)}
-              className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center"
+              className="w-10 h-10 rounded-full bg-green-600 text-white"
             >
               +
             </button>
