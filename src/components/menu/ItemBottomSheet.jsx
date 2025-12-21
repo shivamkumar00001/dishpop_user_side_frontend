@@ -3,21 +3,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { calculateItemPrice } from "../../utils/calcPrice.js";
 
 /* ======================================================
-   BODY SCROLL LOCK — BULLETPROOF
+   BULLETPROOF BODY SCROLL LOCK (REFERENCE COUNTED)
 ====================================================== */
-let scrollLockCount = 0;
+let scrollLocks = 0;
 
-const lockBodyScroll = () => {
-  if (scrollLockCount === 0) {
+const lockBody = () => {
+  if (scrollLocks === 0) {
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
   }
-  scrollLockCount++;
+  scrollLocks++;
 };
 
-const unlockBodyScroll = () => {
-  scrollLockCount = Math.max(0, scrollLockCount - 1);
-  if (scrollLockCount === 0) {
+const unlockBody = () => {
+  scrollLocks = Math.max(0, scrollLocks - 1);
+  if (scrollLocks === 0) {
     document.body.style.overflow = "";
     document.body.style.touchAction = "";
   }
@@ -41,10 +41,10 @@ export default function ItemBottomSheet({
 
   const scrollRef = useRef(null);
 
-  /* ===================== SCROLL LOCK ===================== */
+  /* ===================== BODY SCROLL ===================== */
   useEffect(() => {
-    if (isOpen) lockBodyScroll();
-    return () => unlockBodyScroll();
+    if (isOpen) lockBody();
+    return () => unlockBody();
   }, [isOpen]);
 
   /* ===================== INIT ===================== */
@@ -81,22 +81,22 @@ export default function ItemBottomSheet({
   );
 
   const totalPrice = useMemo(
-    () =>
-      calculateItemPrice(selectedVariant, flatAddOns, qty),
+    () => calculateItemPrice(selectedVariant, flatAddOns, qty),
     [selectedVariant, flatAddOns, qty]
   );
 
   /* ===================== VALIDATION ===================== */
   const isValid = useMemo(() => {
     if (!selectedVariant) return false;
+
     return item.addOnGroups?.every(
       (g) => !g.required || selectedAddOns[g.id]
     );
   }, [item.addOnGroups, selectedAddOns, selectedVariant]);
 
-  /* ===================== CLOSE HANDLER ===================== */
+  /* ===================== CLOSE ===================== */
   const closeSheet = () => {
-    unlockBodyScroll();
+    unlockBody();
     onClose();
   };
 
@@ -174,6 +174,7 @@ export default function ItemBottomSheet({
               <h2 className="mt-4 text-2xl font-bold">{item.name}</h2>
               <p className="text-sm text-gray-600">{item.description}</p>
 
+              {/* VARIANTS */}
               {item.variants?.length > 0 && (
                 <div className="mt-6">
                   <h3 className="font-semibold mb-4">Choose a variant</h3>
@@ -187,7 +188,7 @@ export default function ItemBottomSheet({
                           key={v.name}
                           whileTap={{ scale: 0.96 }}
                           onClick={() => setSelectedVariant(v)}
-                          className={`p-4 rounded-2xl border cursor-pointer ${
+                          className={`p-4 rounded-2xl border cursor-pointer transition ${
                             selected
                               ? "border-green-600 bg-green-50 ring-2 ring-green-500"
                               : "border-gray-200"
@@ -201,6 +202,45 @@ export default function ItemBottomSheet({
                   </div>
                 </div>
               )}
+
+              {/* ADDONS */}
+              {item.addOnGroups?.map((group) => (
+                <div key={group.id} className="mt-6">
+                  <h3 className="font-semibold mb-3">
+                    {group.name}
+                    {group.required && (
+                      <span className="text-red-500 ml-1">*</span>
+                    )}
+                  </h3>
+
+                  <div className="space-y-3">
+                    {group.addOns.map((addon) => {
+                      const selected =
+                        selectedAddOns[group.id]?.id === addon.id;
+
+                      return (
+                        <motion.div
+                          key={addon.id}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() =>
+                            selectAddon(group.id, addon)
+                          }
+                          className={`flex justify-between items-center p-4 rounded-2xl border cursor-pointer ${
+                            selected
+                              ? "border-green-600 bg-green-50 ring-1 ring-green-400"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          <span className="font-medium">{addon.name}</span>
+                          <span className="text-sm">
+                            + ₹{addon.price}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* FOOTER */}
@@ -212,7 +252,9 @@ export default function ItemBottomSheet({
                 >
                   −
                 </button>
+
                 <span className="font-semibold text-lg">{qty}</span>
+
                 <button
                   onClick={() => setQty((q) => q + 1)}
                   className="w-11 h-11 rounded-full bg-green-600 text-white text-xl"
