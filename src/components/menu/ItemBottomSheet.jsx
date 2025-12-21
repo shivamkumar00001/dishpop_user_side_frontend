@@ -69,21 +69,21 @@ export default function ItemBottomSheet({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-black/50"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
       <motion.div
-        className="absolute bottom-0 w-full h-[90vh] bg-white rounded-t-[28px] flex flex-col"
+        className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[28px] flex flex-col"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
         drag="y"
-        dragConstraints={{ top: 0 }}   // ✅ FULL drag till screen end
-        dragElastic={0.3}
+        dragConstraints={{ top: 0 }}
+        dragElastic={0.2}
         onDragEnd={(e, info) => {
           if (info.offset.y > 160 || info.velocity.y > 800) {
             onClose();
@@ -96,8 +96,8 @@ export default function ItemBottomSheet({
           <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
         </div>
 
-        {/* CONTENT */}
-        <div className="flex-1 overflow-y-auto px-5 pb-32">
+        {/* SCROLLABLE CONTENT */}
+        <div className="flex-1 overflow-y-auto px-5 pb-32 touch-pan-y">
           <img
             src={item.imageUrl || item.thumbnailUrl}
             alt={item.name}
@@ -158,8 +158,8 @@ export default function ItemBottomSheet({
           ))}
         </div>
 
-        {/* FOOTER */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-5 py-4 flex justify-between">
+        {/* FIXED FOOTER */}
+        <div className="sticky bottom-0 bg-white border-t px-5 py-4 flex justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
