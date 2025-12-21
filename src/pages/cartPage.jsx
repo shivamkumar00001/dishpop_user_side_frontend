@@ -7,94 +7,105 @@ import CartSummary from "../components/cart/CartSummary";
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const params = useParams();
+  const { id: username } = useParams();
+
+  const cartKey = `cart_${username}`;
   const [cart, setCart] = useState([]);
-  const cartKey = `cart_${params.id}`;
 
- useEffect(() => {
-  const Set = ()=>{
-    setCart(JSON.parse(localStorage.getItem(cartKey)) || []);
-  }
-  Set();
-}, [cartKey]);
+  /* ---------------- LOAD CART ---------------- */
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem(cartKey)) || [];
+    setCart(saved);
+  }, [cartKey]);
 
-const updateCart = (updated) => {
-  setCart(updated);
-  localStorage.setItem(cartKey, JSON.stringify(updated));
-};
+  const updateCart = (updated) => {
+    setCart(updated);
+    localStorage.setItem(cartKey, JSON.stringify(updated));
+  };
 
-  const increaseQty = (_id) => {
+  /* ---------------- QTY CONTROLS ---------------- */
+  const increaseQty = (itemId) => {
     updateCart(
       cart.map((item) =>
-        item._id === _id ? { ...item, qty: item.qty + 1 } : item
+        item.id === itemId
+          ? {
+              ...item,
+              qty: item.qty + 1,
+              totalPrice: item.unitPrice * (item.qty + 1),
+            }
+          : item
       )
     );
   };
 
-  const decreaseQty = (_id) => {
+  const decreaseQty = (itemId) => {
     updateCart(
       cart
         .map((item) =>
-          item._id === _id ? { ...item, qty: item.qty - 1 } : item
+          item.id === itemId
+            ? {
+                ...item,
+                qty: item.qty - 1,
+                totalPrice: item.unitPrice * (item.qty - 1),
+              }
+            : item
         )
         .filter((item) => item.qty > 0)
     );
   };
 
+  /* ---------------- TOTAL ---------------- */
   const totalAmount = cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
+    (sum, item) => sum + Number(item.totalPrice || 0),
     0
   );
 
+  /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex flex-col">
-      
-      <CartHeader cart={cart} navigate={navigate} params={params} />
+      <CartHeader cart={cart} navigate={navigate} username={username} />
 
-      <div className="flex-1 max-w-screen-xl mx-auto px-4 py-8">
+      <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {cart.length === 0 ? (
-          <div className="mt-24 text-center">
-            <p className="text-xl font-semibold text-gray-600">
+          <div className="mt-20 text-center px-4">
+            <p className="text-lg sm:text-xl font-semibold text-gray-600">
               Your cart is empty 🍃
             </p>
 
             <button
-              onClick={() => navigate(`/menu/${params.id}`)}
-              className="mt-6 bg-green-600 hover:bg-green-700 transition
-              px-8 py-3 text-white rounded-xl shadow-md"
+              onClick={() => navigate(`/menu/${username}`)}
+              className="mt-6 bg-green-600 px-6 sm:px-8 py-3 text-white rounded-xl"
             >
               Browse Menu
             </button>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-6">
-            
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* ITEMS */}
-            <div className="lg:col-span-2 space-y-4">
+            <section className="space-y-4 lg:col-span-2">
               {cart.map((item) => (
                 <CartItem
-                  key={item._id}
+                  key={item.id}
                   item={item}
                   increaseQty={increaseQty}
                   decreaseQty={decreaseQty}
                 />
               ))}
-            </div>
+            </section>
 
-            {/* SUMMARY (Sticky on desktop) */}
-            <div className="lg:sticky lg:top-24 h-fit">
+            {/* SUMMARY */}
+            <aside className="lg:sticky lg:top-24">
               <CartSummary
                 totalAmount={totalAmount}
                 navigate={navigate}
-                params={params}
+                username={username}
               />
-            </div>
+            </aside>
           </div>
         )}
-      </div>
+      </main>
 
-      {/* Footer */}
-      <footer className="text-center text-gray-500 py-6">
+      <footer className="text-center text-gray-500 py-4 sm:py-6 text-sm">
         © 2025 DishPop — Order Happiness 🍽️
       </footer>
     </div>

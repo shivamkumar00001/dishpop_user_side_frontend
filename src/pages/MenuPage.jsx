@@ -5,117 +5,95 @@ import Header from "../components/menu/Header";
 import SearchBar from "../components/menu/SearchBar";
 import CategorySelector from "../components/menu/CategorySelector";
 import ItemsGrid from "../components/menu/ItemsGrid";
-import ARViewer from "../components/menu/ARViewer";
 import ItemBottomSheet from "../components/menu/ItemBottomSheet";
-import MenuLoader from "../components/menu/MenuLoader";
-import RetryScreen from "../components/menu/RetryScreen";
+import CartBar from "../components/menu/CartBar";
 import InfiniteLoader from "../components/menu/InfiniteLoader";
-import { incrementARStat } from "../services/arStats.service";
-import useDebounce from "../hooks/useDebounce";
+import MenuLoader from "../components/menu/MenuLoader";
+import ARViewer from "../components/menu/ARViewer";
+
 import usePaginatedMenu from "../hooks/usePaginatedMenu";
+import useDebounce from "../hooks/useDebounce";
+
+import { incrementARStat } from "../services/arStats.service";
 
 export default function MenuPage() {
-  const { id: restaurantId } = useParams();
+  const { id: username } = useParams();
   const navigate = useNavigate();
-  const params = useParams();
 
+  /* ---------------- FILTERS ---------------- */
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 400);
 
-  // 🔑 Debounced search
-  const debouncedSearch = useDebounce(searchQuery, 500);
-  const isSearching = Boolean(debouncedSearch);
-
-  const {
-    items,
-    categories,
-    fetchPage,
-    hasMore,
-    initialLoading,
-    isFetching,
-    initialLoadError,
-    hasResolvedOnce,
-    retry,
-  } = usePaginatedMenu(
-    restaurantId,
-    activeCategory,
-    debouncedSearch
-  );
-
-  const autoCategories = [
-    "All",
-    ...new Set(items.map(i => i.category?.trim()).filter(Boolean)),
-  ];
-
-  const finalCategories =
-    categories.length > 1 ? categories : autoCategories;
-
-  const [cart, setCart] = useState([]);
-  const [animateCount, setAnimateCount] = useState(false);
-  const [arItem, setArItem] = useState(null);
-  const [showArViewer, setShowArViewer] = useState(false);
+  /* ---------------- BOTTOM SHEET ---------------- */
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const loaderRef = useRef(null);
-  
-  
-  const cartKey = `cart_${restaurantId}`;
+  /* ---------------- AR VIEW ---------------- */
+  const [arItem, setArItem] = useState(null);
+  const [showArViewer, setShowArViewer] = useState(false);
 
-  // Load cart once
-    useEffect(() => {
-     const Set = () =>{
-       setCart(JSON.parse(localStorage.getItem(cartKey)) || []);
-     }
-     Set()
-    }, [cartKey]);
+  // prevent duplicate AR stats
+  const arViewedRef = useRef(new Set());
 
-const updateCart = (updated) => {
-  setCart(updated);
-  localStorage.setItem(cartKey, JSON.stringify(updated));
-};
+  /* ---------------- CART ---------------- */
+  const cartKey = `cart_${username}`;
+  const [cart, setCart] = useState(
+    JSON.parse(localStorage.getItem(cartKey)) || []
+  );
 
-  const addToCart = (item) => {
-    const exists = cart.find((i) => i._id === item._id);
-    const updated = exists
-      ? cart.map((i) =>
-          i._id === item._id ? { ...i, qty: i.qty + 1 } : i
-        )
-      : [...cart, { ...item, qty: 1 }];
+  useEffect(() => {
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+  }, [cart, cartKey]);
 
-    updateCart(updated);
-    setAnimateCount(true);
-    setTimeout(() => setAnimateCount(false), 300);
+  const increaseQty = (itemId) => {
+    setCart((prev) =>
+      prev.map((i) =>
+        i.id === itemId ? { ...i, qty: i.qty + 1 } : i
+      )
+    );
   };
 
-  const increaseQty = (id) =>
-    updateCart(cart.map((i) =>
-      i._id === id ? { ...i, qty: i.qty + 1 } : i
-    ));
-
-  const decreaseQty = (id) =>
-    updateCart(
-      cart
+  const decreaseQty = (itemId) => {
+    setCart((prev) =>
+      prev
         .map((i) =>
-          i._id === id ? { ...i, qty: i.qty - 1 } : i
+          i.id === itemId ? { ...i, qty: i.qty - 1 } : i
         )
         .filter((i) => i.qty > 0)
     );
+  };
 
- const openArViewer = (item) => {
-  setArItem(item);
-  setShowArViewer(true);
+  /* ---------------- DATA ---------------- */
+  const {
+    menu,
+    items,
+    fetchPage,
+    hasMore,
+    isFetching,
+    initialLoading,
+  } = usePaginatedMenu(username, debouncedSearch);
 
-  // 🔥 Track AR view click
-  incrementARStat({
-    restaurantId,
-    itemName: item.name,
-    imageUrl: item.imageUrl || item.thumbnailUrl,
-  });
-};
+  /* ---------------- AR HANDLER ---------------- */
+  const handleArView = (item) => {
+    setArItem(item);
+    setShowArViewer(true);
 
-  // 🔥 Infinite scroll (disabled during search)
+    if (arViewedRef.current.has(item.id)) return;
+
+    incrementARStat({
+      restaurantId: username,
+      itemName: item.name,
+      imageUrl: item.imageUrl || item.thumbnailUrl,
+    });
+
+    arViewedRef.current.add(item.id);
+  };
+
+  /* ---------------- PAGINATION ---------------- */
+  const loaderRef = useRef(null);
+
   useEffect(() => {
-    if (!loaderRef.current || isSearching) return;
+    if (!loaderRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -128,30 +106,28 @@ const updateCart = (updated) => {
 
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [fetchPage, hasMore, isFetching, isSearching]);
+  }, [fetchPage, hasMore, isFetching]);
 
-  // ❗ Retry only for FIRST load
-  if (initialLoadError && items.length === 0 && !isSearching) {
-    return <RetryScreen retry={retry} />;
-  }
+  /* ---------------- FILTERED VIEW ---------------- */
+  const visibleCategories = menu
+    .filter((c) => c.dishes.length > 0)
+    .map((c) => c.name);
 
-  // ❗ Loader only for FIRST load
-  if (initialLoading) return <MenuLoader />;
+  const visibleItems =
+    activeCategory === "All"
+      ? items
+      : items.filter(
+          (i) => i.category?.name === activeCategory
+        );
 
-  // ✅ Stable empty state
-  const showEmptyState =
-    hasResolvedOnce &&
-    items.length === 0 &&
-    !initialLoadError;
+  /* ---------------- LOADER CONTROL ---------------- */
+  const showInitialLoader =
+    initialLoading && items.length === 0;
 
+  /* ---------------- UI ---------------- */
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 pb-20">
-      <Header
-        navigate={navigate}
-        cart={cart}
-        params={params}
-        animateCount={animateCount}
-      />
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 pb-28">
+      <Header navigate={navigate} cart={cart} params={{ id: username }} />
 
       <SearchBar
         searchQuery={searchQuery}
@@ -159,46 +135,39 @@ const updateCart = (updated) => {
       />
 
       <CategorySelector
-        categories={finalCategories}
+        categories={["All", ...visibleCategories]}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
       />
 
+      {/* 🔥 OVERLAY LOADER (NO UNMOUNT) */}
+      {showInitialLoader && (
+        <div className="fixed inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+          <MenuLoader />
+        </div>
+      )}
+
       <ItemsGrid
-        items={items}
-        addToCart={addToCart}
+        items={visibleItems}
+        cart={cart}
+        addToCart={(item) => setSelectedItem(item)}
         openItemSheet={setSelectedItem}
-        handleArView={openArViewer}
+        increaseQty={increaseQty}
+        decreaseQty={decreaseQty}
+        onArView={handleArView}
       />
 
-      {showEmptyState && (
-        <div className="text-center text-gray-500 mt-10">
-          <p className="text-lg font-semibold">No items found</p>
-          <p className="text-sm">
-            {isSearching
-              ? "Try a different search term"
-              : "Try a different category"}
-          </p>
-        </div>
-      )}
-
-      {!isSearching && (
-        <div ref={loaderRef}>
-          <InfiniteLoader
-            hasMore={hasMore}
-            isFetching={isFetching}
-          />
-        </div>
-      )}
+      <div ref={loaderRef}>
+        <InfiniteLoader hasMore={hasMore} isFetching={isFetching} />
+      </div>
 
       <ItemBottomSheet
         item={selectedItem}
         isOpen={!!selectedItem}
         onClose={() => setSelectedItem(null)}
         cart={cart}
-        increaseQty={increaseQty}
-        decreaseQty={decreaseQty}
-        addToCart={addToCart}
+        setCart={setCart}
+        cartKey={cartKey}
       />
 
       <ARViewer
@@ -206,6 +175,8 @@ const updateCart = (updated) => {
         isOpen={showArViewer}
         onClose={() => setShowArViewer(false)}
       />
+
+      <CartBar cart={cart} />
     </div>
   );
 }

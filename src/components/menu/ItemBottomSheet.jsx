@@ -1,83 +1,241 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { calculateItemPrice } from "../../utils/calcPrice.js";
 
 export default function ItemBottomSheet({
   item,
   isOpen,
   onClose,
   cart,
-  increaseQty,
-  decreaseQty,
-  addToCart  // ⭐ ADD THIS
+  setCart,
+  cartKey,
 }) {
-
-  const navigate = useNavigate();
-  const params = useParams();
-
   if (!isOpen || !item) return null;
 
-  const cartItem = cart.find((i) => i._id === item._id);
-  const qty = cartItem ? cartItem.qty : 0;
+  /* ---------------- STATE (FRESH EVERY OPEN) ---------------- */
+  const [selectedVariant, setSelectedVariant] = useState(
+  item.defaultVariant || item.variants?.[0]
+);
 
+
+  // { [groupId]: addon | null }
+  const [selectedAddOns, setSelectedAddOns] = useState({});
+  const [qty, setQty] = useState(1);
+
+  /* 🔥 RESET ON EVERY OPEN */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setSelectedVariant(item.defaultVariant);
+    setSelectedAddOns({});
+    setQty(1);
+  }, [isOpen, item.id]);
+
+  /* ---------------- FLATTEN ADDONS ---------------- */
+  const flatAddOns = Object.values(selectedAddOns).filter(Boolean);
+
+  const totalPrice =
+    qty === 0
+      ? 0
+      : calculateItemPrice(selectedVariant, flatAddOns, qty);
+
+  /* ---------------- RADIO SELECT ---------------- */
+  const selectAddon = (group, addon) => {
+    setSelectedAddOns(prev => ({
+      ...prev,
+      [group.id]:
+        prev[group.id]?.id === addon.id ? null : addon,
+    }));
+  };
+
+  /* ---------------- VALIDATION ---------------- */
+  const isValid = item.addOnGroups.every(group => {
+    if (!group.required) return true;
+    return Boolean(selectedAddOns[group.id]);
+  });
+
+  /* ---------------- ADD TO CART ---------------- */
+  const handleAddToCart = () => {
+  if (!isValid || qty === 0) return;
+
+  const variantPrice = Number(selectedVariant?.price ?? 0);
+
+  const addonsTotal = flatAddOns.reduce(
+    (sum, a) => sum + Number(a?.price ?? 0),
+    0
+  );
+
+  const unitPrice = variantPrice + addonsTotal;
+
+  const newCartItem = {
+    id: crypto.randomUUID(), // unique cart row
+    itemId: item.id,
+    name: item.name,
+    imageUrl: item.imageUrl || item.thumbnailUrl,
+
+    qty,
+
+    variant: {
+      id: selectedVariant.id,
+      name: selectedVariant.name,
+      price: variantPrice,
+    },
+
+    addons: flatAddOns.map(a => ({
+      id: a.id,
+      name: a.name,
+      price: Number(a.price),
+    })),
+
+    // 🔥 THESE TWO FIX EVERYTHING
+    unitPrice,
+    totalPrice: unitPrice * qty,
+  };
+
+  const updated = [...cart, newCartItem];
+
+  setCart(updated);
+  localStorage.setItem(cartKey, JSON.stringify(updated));
+  onClose();
+};
+
+  /* ---------------- UI (DESIGN UNCHANGED) ---------------- */
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex justify-center items-end">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
+      <div className="absolute inset-0" onClick={onClose} />
 
-      {/* Backdrop */}
-      <div className="absolute inset-0" onClick={onClose}></div>
-
-      {/* Sheet */}
       <div
-        className="relative bg-white w-full rounded-t-3xl p-6 shadow-xl animate-slideUp"
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-h-[92vh] bg-white rounded-t-[28px]
+                   overflow-y-auto animate-slideUp"
+        onClick={e => e.stopPropagation()}
       >
-        <div className="w-14 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
+        {/* HANDLE */}
+        <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3" />
 
-        <img
-          src={item.imageUrl || item.thumbnailUrl}
-          alt={item.name}
-          className="w-full h-48 object-cover rounded-xl"
-        />
+        {/* IMAGE */}
+        <div className="px-5 pt-4">
+          <img
+            src={item.imageUrl || item.thumbnailUrl}
+            onError={e => (e.currentTarget.src = "/food-placeholder.png")}
+            alt={item.name}
+            className="w-full h-44 object-cover rounded-2xl shadow-md"
+          />
+        </div>
 
-        <h2 className="text-2xl font-bold text-green-700 mt-4">{item.name}</h2>
-        <p className="text-gray-600 mt-1">{item.description}</p>
+        {/* CONTENT */}
+        <div className="px-5 pb-28">
+          <h2 className="mt-4 text-2xl font-bold text-gray-900">
+            {item.name}
+          </h2>
+          <p className="text-gray-600 text-sm mt-1">
+            {item.description}
+          </p>
 
-        <p className="text-xl font-semibold text-green-700 mt-3">₹ {item.price}</p>
+          {/* VARIANTS */}
+          <section className="mt-6">
+            <h3 className="font-semibold text-gray-800 mb-3">
+              Choose Size
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {item.variants.map(v => (
+                <button
+                  key={v.name}
+                  onClick={() => setSelectedVariant(v)}
+                  className={`p-3 rounded-xl border text-left
+                    ${
+                      selectedVariant.name === v.name
+                        ? "border-green-600 bg-green-50"
+                        : "border-gray-200"
+                    }`}
+                >
+                  <p className="font-medium">{v.name}</p>
+                  <p className="text-sm">₹ {v.price}</p>
+                </button>
+              ))}
+            </div>
+          </section>
 
-        {/* Qty Controls */}
-        <div className="flex items-center justify-between mt-6">
+          {/* ADDONS – RADIO */}
+          {item.addOnGroups.map(group => (
+            <section key={group.id} className="mt-7">
+              <h3 className="font-semibold text-gray-800 mb-2">
+                {group.name}
+                {group.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
+              </h3>
 
+              <div className="space-y-3">
+                {group.addOns.map(addon => {
+                  const selected =
+                    selectedAddOns[group.id]?.id === addon.id;
+
+                  return (
+                    <div
+                      key={addon.id}
+                      onClick={() => selectAddon(group, addon)}
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer
+                        ${
+                          selected
+                            ? "border-green-600 bg-green-50"
+                            : "border-gray-200"
+                        }`}
+                    >
+                      <div className="flex flex-col">
+                        <span>{addon.name}</span>
+                        <span className="text-sm text-gray-500">
+                          ₹ {addon.price}
+                        </span>
+                      </div>
+
+                      {/* RADIO */}
+                      <div
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center
+                          ${
+                            selected
+                              ? "border-green-600"
+                              : "border-gray-400"
+                          }`}
+                      >
+                        {selected && (
+                          <div className="w-3 h-3 rounded-full bg-green-600" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        {/* FOOTER */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t
+                        px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => qty > 0 && decreaseQty(item._id)}
-              className="w-10 h-10 bg-red-500 text-white rounded-full text-xl hover:bg-red-600 disabled:opacity-40"
-              disabled={qty === 0}
+              onClick={() => setQty(q => Math.max(1, q - 1))}
+              className="w-10 h-10 rounded-full bg-gray-200 text-xl"
             >
               −
             </button>
-
-            <span className="text-lg font-semibold">{qty}</span>
-
+            <span className="font-semibold text-lg">{qty}</span>
             <button
-            onClick={() => {
-              if (qty === 0) {
-                addToCart(item);          // if not in cart → ADD FIRST
-              } else {
-                increaseQty(item._id);    // else → increase qty
-              }
-            }}
-            className="w-10 h-10 bg-green-600 text-white rounded-full text-xl hover:bg-green-700"
-          >
-            +
-          </button>
-
+              onClick={() => setQty(q => q + 1)}
+              className="w-10 h-10 rounded-full bg-green-600 text-white text-xl"
+            >
+              +
+            </button>
           </div>
 
           <button
-            onClick={() => navigate(`/cart/${params.id}`)}
-            className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700"
+            disabled={!isValid}
+            onClick={handleAddToCart}
+            className="px-7 py-3 rounded-2xl font-semibold text-white
+                       bg-gradient-to-r from-green-600 to-emerald-500
+                       disabled:opacity-40"
           >
-            Go to Cart
+            Add ₹{totalPrice}
           </button>
-
         </div>
       </div>
     </div>

@@ -1,65 +1,72 @@
 export default function CartItem({ item, increaseQty, decreaseQty }) {
   return (
     <div
-      className="
-        bg-white rounded-2xl shadow-md p-3
-        flex items-center gap-3
-      "
+      className="bg-white p-4 sm:p-5 rounded-2xl shadow
+                 flex flex-col sm:flex-row gap-4"
     >
       {/* IMAGE */}
       <img
-        src={item.imageUrl || item.thumbnailUrl}
+        src={item.imageUrl}
         alt={item.name}
-        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover flex-shrink-0"
+        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover self-start"
       />
 
-      {/* DETAILS + QTY */}
-      <div className="flex-1 min-w-0">
-        <h2 className="text-sm sm:text-lg font-semibold text-green-800 truncate">
-          {item.name}
-        </h2>
+      {/* CONTENT */}
+      <div className="flex-1 flex flex-col justify-between">
+        <div>
+          <h2 className="font-semibold text-base sm:text-lg">
+            {item.name}
+          </h2>
 
-        <p className="text-gray-600 text-sm mt-0.5">
-          ₹ {item.price}
-        </p>
+          {/* VARIANT */}
+          <p className="text-sm text-gray-600 mt-1">
+            {item.variant?.name} · ₹ {item.unitPrice}
+          </p>
 
-        {/* QTY CONTROLS */}
-        <div className="mt-2 flex items-center gap-3">
-          <button
-            onClick={() => decreaseQty(item._id)}
-            className="
-              w-8 h-8 rounded-full
-              bg-red-100 text-red-600
-              flex items-center justify-center
-              text-lg font-bold
-              hover:bg-red-200 transition
-            "
-          >
-            −
-          </button>
+          {/* ADDONS */}
+          {item.addons?.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+              Add-ons: {item.addons.map(a => a.name).join(", ")}
+            </p>
+          )}
+        </div>
 
-          <span className="text-sm font-semibold min-w-[20px] text-center">
-            {item.qty}
-          </span>
+        {/* QTY + TOTAL (MOBILE INLINE) */}
+        <div className="mt-4 sm:mt-3 flex items-center justify-between sm:justify-start sm:gap-6">
+          {/* QTY CONTROLS */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => decreaseQty(item.id)}
+              className="w-9 h-9 rounded-full bg-gray-200
+                         text-lg font-semibold active:scale-95"
+            >
+              −
+            </button>
 
-          <button
-            onClick={() => increaseQty(item._id)}
-            className="
-              w-8 h-8 rounded-full
-              bg-green-100 text-green-700
-              flex items-center justify-center
-              text-lg font-bold
-              hover:bg-green-200 transition
-            "
-          >
-            +
-          </button>
+            <span className="font-medium text-base">
+              {item.qty}
+            </span>
+
+            <button
+              onClick={() => increaseQty(item.id)}
+              className="w-9 h-9 rounded-full bg-green-600
+                         text-white text-lg font-semibold active:scale-95"
+            >
+              +
+            </button>
+          </div>
+
+          {/* TOTAL (MOBILE) */}
+          <div className="sm:hidden font-bold text-green-700">
+            ₹ {item.totalPrice}
+          </div>
         </div>
       </div>
 
-      {/* ITEM TOTAL */}
-      <div className="text-green-700 font-bold text-sm sm:text-base whitespace-nowrap">
-        ₹ {item.price * item.qty}
+      {/* TOTAL (DESKTOP) */}
+      <div className="hidden sm:flex font-bold text-green-700
+                      items-center text-lg">
+        ₹ {item.totalPrice}
       </div>
     </div>
   );

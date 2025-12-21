@@ -2,39 +2,50 @@ export default function OrderSummary({
   cart,
   totalAmount,
   loading,
-  handleCheckout
+  handleCheckout,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6">
-      
       <h2 className="text-xl font-bold text-green-800 mb-4">
         Order Summary
       </h2>
 
-      {/* ITEMS */}
-      <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-        {cart.map(item => (
+      <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
+        {cart.map((item) => (
           <div
-            key={item._id}
-            className="flex justify-between text-sm"
+            key={item.id}
+            className="border-b pb-3 last:border-none"
           >
-            <span className="text-gray-700">
-              {item.name} × {item.qty}
-            </span>
-            <span className="font-semibold text-gray-800">
-              ₹{item.price * item.qty}
-            </span>
+            <div className="flex justify-between text-sm font-semibold">
+              <span>{item.name} × {item.qty}</span>
+              <span>₹{item.totalPrice}</span>
+            </div>
+
+            <p className="text-xs text-gray-600 mt-1">
+              Variant: {item.variant.name} (₹{item.variant.price})
+            </p>
+
+            {item.addons?.length > 0 && (
+              <div className="mt-1 space-y-0.5">
+                {item.addons.map(addon => (
+                  <p
+                    key={addon.id}
+                    className="text-xs text-gray-600"
+                  >
+                    + {addon.name} (₹{addon.price})
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {/* TOTAL */}
       <div className="border-t mt-4 pt-4 flex justify-between text-lg font-bold">
         <span>Total Amount</span>
         <span className="text-green-700">₹{totalAmount}</span>
       </div>
 
-      {/* CTA */}
       <button
         onClick={handleCheckout}
         disabled={loading}

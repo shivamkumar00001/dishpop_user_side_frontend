@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import CheckoutHeader from "../components/checkout/CheckoutHeader";
@@ -8,7 +8,9 @@ import api from "../lib/api";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { id: username } = useParams(); // username
+  const { id: username } = useParams();
+
+  const cartKey = `cart_${username}`;
 
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -17,28 +19,32 @@ export default function CheckoutPage() {
     name: "",
     phone: "",
     tableNumber: "",
-    description: ""
+    description: "",
   });
-  const cartKey = `cart_${username}`;
-  const ordersKey = `orders_${username}`;
+
+  /* ---------------- LOAD CART ---------------- */
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem(cartKey)) || [];
     setCart(saved);
   }, [cartKey]);
 
-  const totalAmount = cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  );
+  /* ---------------- GRAND TOTAL ---------------- */
+  const grandTotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + Number(item.totalPrice), 0);
+  }, [cart]);
 
+  /* ---------------- FORM HANDLING ---------------- */
   const handleChange = (e) => {
-    setDetails(prev => ({
+    setDetails((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
- const handleCheckout = async () => {
+  /* ---------------- CHECKOUT ---------------- */
+  const ordersKey = `orders_${username}`;
+
+const handleCheckout = async () => {
   if (!username) return alert("Invalid restaurant link");
   if (!details.name || !details.tableNumber)
     return alert("Please fill all required fields");
@@ -47,37 +53,57 @@ export default function CheckoutPage() {
   setLoading(true);
 
   try {
+    const items = cart.map(item => {
+      const addonsTotal =
+        item.addons?.reduce((s, a) => s + a.price, 0) || 0;
+
+      const unitPrice = item.variant.price + addonsTotal;
+      const totalPrice = unitPrice * item.qty;
+
+      return {
+        itemId: item.itemId || item.id,
+        name: item.name,
+        imageUrl: item.imageUrl || "",
+
+        variant: item.variant,
+        addons: item.addons || [],
+
+        qty: item.qty,
+        unitPrice,
+        totalPrice,
+      };
+    });
+
+    const grandTotal = items.reduce(
+      (sum, i) => sum + i.totalPrice,
+      0
+    );
+
     const payload = {
       customerName: details.name.trim(),
-      phoneNumber: details.phone ? String(details.phone) : "",
+      phoneNumber: details.phone || "",
       tableNumber: Number(details.tableNumber),
       description: details.description || "",
-      items: cart.map(item => ({
-        itemId: item._id,
-        name: item.name,
-        qty: Number(item.qty),
-        price: Number(item.price),
-        imageUrl: item.imageUrl || ""
-      }))
+      items,
+      grandTotal,
     };
 
-    // Send to backend
+    // ✅ BACKEND
     await api.post(`/api/checkout/${username}`, payload);
 
-    // BUILD LOCAL ORDER OBJECT
+    // ✅ BUILD LOCAL ORDER (THIS WAS MISSING)
     const newOrder = {
-      id: Date.now(), // frontend order id
+      id: Date.now(),
       customerName: payload.customerName,
       phoneNumber: payload.phoneNumber,
       tableNumber: payload.tableNumber,
       description: payload.description,
-      items: payload.items,
-      totalAmount,
+      items,
+      totalAmount: grandTotal,
       timestamp: Date.now(),
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hrs
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
     };
 
-    //  SAVE TO LOCAL STORAGE
     const existingOrders =
       JSON.parse(localStorage.getItem(ordersKey)) || [];
 
@@ -86,27 +112,32 @@ export default function CheckoutPage() {
       JSON.stringify([newOrder, ...existingOrders])
     );
 
-    // CLEAR CART & REDIRECT
+    // ✅ CLEAR CART & REDIRECT
     localStorage.removeItem(cartKey);
     navigate(`/greet/${username}`);
 
   } catch (err) {
-    alert(err.response?.data?.message || "Checkout failed");
+    alert(err.message || "Checkout failed");
   } finally {
     setLoading(false);
   }
 };
 
 
+  /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen bg-green-50 pb-20">
       <CheckoutHeader navigate={navigate} username={username} />
 
       <div className="max-w-screen-xl mx-auto px-4 mt-6 flex flex-col lg:flex-row gap-8">
-        <CustomerDetails details={details} handleChange={handleChange} />
+        <CustomerDetails
+          details={details}
+          handleChange={handleChange}
+        />
+
         <OrderSummary
           cart={cart}
-          totalAmount={totalAmount}
+          totalAmount={grandTotal}
           loading={loading}
           handleCheckout={handleCheckout}
         />

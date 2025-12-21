@@ -96,8 +96,8 @@ export default function LandingPage() {
       .then((res) => {
         if (!mounted) return;
         setRestaurantName(res.data?.restaurantName || "Our Restaurant");
-        setRating(res.data?.rating ?? 4.8);
-        setReviewCount(res.data?.reviewCount ?? 128);
+        // setRating(res.data?.rating ?? 4.8);
+        // setReviewCount(res.data?.reviewCount ?? 128);
       })
       .catch(console.error)
       .finally(() => mounted && setIsLoading(false));

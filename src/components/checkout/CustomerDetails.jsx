@@ -6,25 +6,30 @@ export default function CustomerDetails({ details, handleChange }) {
       </h2>
 
       <div className="grid sm:grid-cols-2 gap-4">
+        {/* NAME */}
         <div className="sm:col-span-2">
           <label className="text-sm font-semibold text-gray-600">
             Name *
           </label>
           <input
+            type="text"
             name="name"
             value={details.name}
             onChange={handleChange}
             placeholder="Your name"
+            required
             className="mt-1 w-full p-3 rounded-xl border
             focus:outline-none focus:ring-2 focus:ring-green-400"
           />
         </div>
 
+        {/* PHONE */}
         <div>
           <label className="text-sm font-semibold text-gray-600">
             Phone (optional)
           </label>
           <input
+            type="tel"
             name="phone"
             value={details.phone}
             onChange={handleChange}
@@ -34,20 +39,25 @@ export default function CustomerDetails({ details, handleChange }) {
           />
         </div>
 
+        {/* TABLE NUMBER */}
         <div>
           <label className="text-sm font-semibold text-gray-600">
             Table Number *
           </label>
           <input
+            type="number"
             name="tableNumber"
             value={details.tableNumber}
             onChange={handleChange}
             placeholder="Table no."
+            min="1"
+            required
             className="mt-1 w-full p-3 rounded-xl border
             focus:outline-none focus:ring-2 focus:ring-green-400"
           />
         </div>
 
+        {/* NOTES */}
         <div className="sm:col-span-2">
           <label className="text-sm font-semibold text-gray-600">
             Notes for kitchen (optional)
