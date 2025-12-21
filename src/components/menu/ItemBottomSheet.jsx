@@ -40,6 +40,8 @@ export default function ItemBottomSheet({
   const [canDrag, setCanDrag] = useState(true);
 
   const scrollRef = useRef(null);
+  const dragStartY = useRef(0);
+  const isDragging = useRef(false);
 
   /* ===================== BODY SCROLL ===================== */
   useEffect(() => {
@@ -145,17 +147,24 @@ export default function ItemBottomSheet({
             transition={{ type: "spring", damping: 32, stiffness: 320 }}
             drag={canDrag ? "y" : false}
             dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.15}
+            dragElastic={{ top: 0, bottom: 0.2 }}
             dragMomentum={false}
+            dragSnapToOrigin={true}
+            onDragStart={(e, info) => {
+              isDragging.current = true;
+              dragStartY.current = info.point.y;
+            }}
             onDragEnd={(e, info) => {
+              isDragging.current = false;
               if (info.offset.y > 120 || info.velocity.y > 700) {
                 closeSheet();
               }
             }}
             onClick={(e) => e.stopPropagation()}
+            style={{ touchAction: "none" }}
           >
             {/* HANDLE */}
-            <div className="py-3">
+            <div className="py-3 cursor-grab active:cursor-grabbing">
               <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
             </div>
 
@@ -163,7 +172,12 @@ export default function ItemBottomSheet({
             <div
               ref={scrollRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto px-5 pb-36 overscroll-contain"
+              className="flex-1 overflow-y-auto px-5 pb-36"
+              style={{
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y"
+              }}
             >
               <img
                 src={item.imageUrl || item.thumbnailUrl}
