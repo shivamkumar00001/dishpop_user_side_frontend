@@ -15,11 +15,14 @@ export default function usePaginatedMenu(
   const [initialLoading, setInitialLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
 
+  // 🔥 NEW
+  const [notSubscribed, setNotSubscribed] = useState(false);
+
   const firstLoadDoneRef = useRef(false);
   const silentResetRef = useRef(false);
 
   const fetchPage = useCallback(async () => {
-    if (!username || isFetching || !hasMore) return;
+    if (!username || isFetching || !hasMore || notSubscribed) return;
 
     setIsFetching(true);
 
@@ -62,6 +65,12 @@ export default function usePaginatedMenu(
 
       setHasMore(Boolean(more));
       setPage((p) => p + 1);
+    } catch (err) {
+      // 🔥 HANDLE NOT SUBSCRIBED
+      if (err?.response?.status === 403) {
+        setNotSubscribed(true);
+        setHasMore(false);
+      }
     } finally {
       setIsFetching(false);
 
@@ -70,7 +79,7 @@ export default function usePaginatedMenu(
         firstLoadDoneRef.current = true;
       }
     }
-  }, [username, search, page, hasMore, isFetching, LIMIT]);
+  }, [username, search, page, hasMore, isFetching, LIMIT, notSubscribed]);
 
   // 🔥 SILENT RESET ON SEARCH / USER CHANGE
   useEffect(() => {
@@ -79,6 +88,7 @@ export default function usePaginatedMenu(
     silentResetRef.current = true;
     setPage(1);
     setHasMore(true);
+    setNotSubscribed(false); // 🔥 reset
     firstLoadDoneRef.current = false;
   }, [username, search]);
 
@@ -93,5 +103,6 @@ export default function usePaginatedMenu(
     hasMore,
     initialLoading,
     isFetching,
+    notSubscribed, // 🔥 expose
   };
 }

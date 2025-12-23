@@ -64,14 +64,16 @@ export default function MenuPage() {
   };
 
   /* ---------------- DATA ---------------- */
-  const {
-    menu,
-    items,
-    fetchPage,
-    hasMore,
-    isFetching,
-    initialLoading,
-  } = usePaginatedMenu(username, debouncedSearch);
+const {
+  menu,
+  items,
+  fetchPage,
+  hasMore,
+  isFetching,
+  initialLoading,
+  notSubscribed, // 🔥 NEW
+} = usePaginatedMenu(username, debouncedSearch);
+
 
   /* ---------------- AR HANDLER ---------------- */
   const handleArView = (item) => {
@@ -123,6 +125,46 @@ export default function MenuPage() {
   /* ---------------- LOADER CONTROL ---------------- */
   const showInitialLoader =
     initialLoading && items.length === 0;
+
+if (notSubscribed) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-red-50 px-4">
+      <div className="relative max-w-md w-full">
+        {/* Glow */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-red-400 to-rose-500 rounded-2xl blur opacity-25"></div>
+
+        {/* Card */}
+        <div className="relative bg-white rounded-2xl shadow-xl p-8 text-center">
+          {/* Icon */}
+          <div className="mx-auto mb-4 h-14 w-14 flex items-center justify-center rounded-full bg-red-100">
+            <span className="text-2xl">🔒</span>
+          </div>
+
+          {/* Title */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Menu Unavailable
+          </h2>
+
+          {/* Description */}
+          <p className="text-gray-600 leading-relaxed mb-6">
+            Service for this restaurant is currently unavailable.
+
+            <br />
+            Please contact the restaurant owner for assistance.
+          </p>
+
+          {/* Divider */}
+          <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-6"></div>
+
+          {/* Footer Note */}
+          <p className="text-sm text-gray-500">
+            Service temporarily restricted
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   /* ---------------- UI ---------------- */
   return (
