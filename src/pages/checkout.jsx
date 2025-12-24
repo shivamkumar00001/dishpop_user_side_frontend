@@ -5,8 +5,6 @@ import CheckoutHeader from "../components/checkout/CheckoutHeader";
 import CustomerDetails from "../components/checkout/CustomerDetails";
 import OrderSummary from "../components/checkout/OrderSummary";
 import api from "../lib/api";
-import socket from "../lib/socket";
-
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { id: username } = useParams();
@@ -91,25 +89,6 @@ const handleCheckout = async () => {
 
     // ✅ BACKEND
     await api.post(`/api/checkout/${username}`, payload);
-    
-// added this
-
-
-
-
-      socket.emit("customer:order:create", {
-    order: {
-      username,
-      customerName: payload.customerName,
-      phoneNumber: payload.phoneNumber,
-      tableNumber: payload.tableNumber,
-      description: payload.description,
-      items,
-      grandTotal,
-    },
-  });
-
-  /////
 
     // ✅ BUILD LOCAL ORDER (THIS WAS MISSING)
     const newOrder = {
