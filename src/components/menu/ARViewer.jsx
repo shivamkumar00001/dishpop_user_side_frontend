@@ -65,9 +65,9 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 interaction-prompt="none"
 
                 /* BIG & BEAUTIFUL */
-                scale="1.6 1.6 1.6"
+                scale="1.8 1.8 1.8"
                 camera-orbit="45deg 65deg 6.5m"
-                field-of-view="14deg"
+                field-of-view="13deg"
 
                 style={{
                   width: "100%",
@@ -117,7 +117,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
               ar-modes="webxr scene-viewer quick-look"
 
               /* SMALL & REALISTIC IN AR */
-              scale="0.35 0.35 0.35"
+              scale="0.20 0.20 0.20"
               ar-scale="fixed"
               ar-placement="floor"
 
