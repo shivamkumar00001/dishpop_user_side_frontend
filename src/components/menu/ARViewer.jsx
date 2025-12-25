@@ -9,10 +9,13 @@ export default function ARViewer({ item, isOpen, onClose }) {
     const arViewer = document.getElementById("ar-model");
     if (!arViewer) return;
 
-    // ✅ Keep mobile gesture context intact
-    requestAnimationFrame(() => {
+    // Ensure AR activation happens in user gesture context
+    try {
       arViewer.activateAR();
-    });
+    } catch (error) {
+      console.error("AR activation failed:", error);
+      alert("AR not supported on this device");
+    }
   };
 
   return (
@@ -41,6 +44,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
             p-2 rounded-full
             bg-white shadow
             hover:bg-green-100 hover:text-green-700
+            transition-colors
           "
         >
           ✕
@@ -55,34 +59,53 @@ export default function ARViewer({ item, isOpen, onClose }) {
         {hasAR ? (
           <>
             {/* =============================== */}
-            {/* 👀 3D VIEWER — BIG & DETAILED */}
+            {/* 👀 3D VIEWER — INTERACTIVE & LARGE */}
             {/* =============================== */}
             <div className="rounded-2xl overflow-hidden border border-green-200 bg-white shadow-md">
               <model-viewer
+                id="preview-model"
                 src={glbUrl}
-                environment-image="neutral"
+                alt={`3D model of ${item.name}`}
+                
+                // ✅ FULL CAMERA CONTROLS
+                camera-controls
+                touch-action="pan-y"
+                disable-tap
+                
+                // ✅ SMOOTH INTERACTIONS
+                interpolation-decay="200"
+                
+                // ✅ AUTO-ROTATE (stops on interaction)
                 auto-rotate
-                auto-rotate-delay="0"
-                rotation-per-second="20deg"
-
-                camera-controls={false}
-                disable-zoom
-                interaction-prompt="none"
-
-                /* 🔥 BIG PREVIEW SIZE */
-                scale="1.5 1.5 1.5"
-                camera-orbit="45deg 65deg 6.5m"
-                field-of-view="14deg"
-                ar-scale="movable"
+                auto-rotate-delay="1000"
+                rotation-per-second="30deg"
+                
+                // ✅ OPTIMAL CAMERA SETUP
+                camera-orbit="45deg 75deg 105%"
+                field-of-view="30deg"
+                min-camera-orbit="auto auto 50%"
+                max-camera-orbit="auto auto 200%"
+                
+                // ✅ LIGHTING
+                environment-image="neutral"
+                exposure="1"
+                shadow-intensity="1"
+                shadow-softness="0.8"
 
                 style={{
                   width: "100%",
-                  height: "260px",
-                  background:
-                    "linear-gradient(180deg,#f8fafc,#ffffff)",
+                  height: "320px",
+                  background: "linear-gradient(180deg, #f8fafc, #ffffff)",
                 }}
               />
             </div>
+
+            {/* =============================== */}
+            {/* 💡 INTERACTION HINT */}
+            {/* =============================== */}
+            <p className="mt-2 text-xs text-gray-500 text-center">
+              👆 Drag to rotate • Pinch to zoom • Two fingers to pan
+            </p>
 
             {/* =============================== */}
             {/* 📱 AR CTA BUTTON */}
@@ -113,28 +136,42 @@ export default function ARViewer({ item, isOpen, onClose }) {
             </p>
 
             {/* =============================== */}
-            {/* 🌍 AR MODEL — SMALL & REALISTIC */}
+            {/* 🌍 AR MODEL — STABLE & RESIZABLE */}
             {/* =============================== */}
             <model-viewer
               id="ar-model"
               src={glbUrl}
               ios-src={usdzUrl}
+              alt={`AR model of ${item.name}`}
+              
+              // ✅ AR CONFIGURATION
               ar
               ar-modes="webxr scene-viewer quick-look"
-
-              /* ✅ SMALL REAL-WORLD SIZE */
-              scale="0.39 0.39 0.39"
               ar-placement="floor"
+              
+              // ✅ REALISTIC SCALE (adjustable in AR)
+              ar-scale="auto"
+              
+              // ✅ STABILITY SETTINGS
               interaction-prompt="none"
               environment-image="neutral"
+              
+              // ✅ OPTIMAL BOUNDS
+              min-camera-orbit="auto auto 5%"
+              max-camera-orbit="auto auto 500%"
+              
+              // ✅ SMOOTH LOADING
+              reveal="interaction"
+              loading="eager"
 
-              /* 🚨 MUST NOT be display:none */
               style={{
                 position: "absolute",
                 width: "1px",
                 height: "1px",
                 opacity: 0,
                 pointerEvents: "none",
+                top: 0,
+                left: 0,
               }}
             />
           </>
@@ -152,8 +189,6 @@ export default function ARViewer({ item, isOpen, onClose }) {
     </div>
   );
 }
-
-
 
 // export default function ARViewer({ item, isOpen, onClose }) {
 //   if (!isOpen || !item) return null;
