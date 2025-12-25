@@ -195,7 +195,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
   max-camera-orbit="45deg 65deg 6.5m"
 
   field-of-view="14deg"
-  scale="1.70 1.70 1.70"
+  scale="0.35 0.35 0.35"
 
   shadow-intensity="0.75"
   shadow-softness="0.75"
@@ -208,27 +208,34 @@ export default function ARViewer({ item, isOpen, onClose }) {
     borderRadius: "16px",
   }}
 >
-
-              {/* ✨ AR CTA */}
-              <button
-                slot="ar-button"
-                className="
-                  absolute bottom-4 left-1/2 -translate-x-1/2
-                  px-7 py-3 rounded-full
-
-                  bg-gradient-to-r from-green-600 via-emerald-500 to-green-600
-                  text-white text-sm font-semibold tracking-wide
-
-                  shadow-lg shadow-green-500/40
-
-                  transition-all duration-300
-                  hover:scale-110 hover:shadow-2xl hover:shadow-green-500/60
-                  active:scale-95
-                "
-              >
-                📱 Place Dish on Your Table
-              </button>
             </model-viewer>
+            <div className="mt-5 flex justify-center">
+  <button
+    onClick={() => {
+      const viewer = document.querySelector("model-viewer");
+      viewer?.activateAR();
+    }}
+    className="
+      group flex items-center gap-3
+      px-6 py-3 rounded-2xl
+
+      bg-gradient-to-r from-green-600 to-emerald-500
+      text-white font-semibold text-sm
+
+      shadow-lg shadow-green-500/30
+      transition-all duration-300
+
+      hover:scale-105 hover:shadow-xl hover:shadow-green-500/50
+      active:scale-95
+    "
+  >
+    <span className="text-lg group-hover:scale-110 transition">
+      📱
+    </span>
+    <span>Place dish on your table</span>
+  </button>
+</div>
+
           </div>
         ) : (
           <div
