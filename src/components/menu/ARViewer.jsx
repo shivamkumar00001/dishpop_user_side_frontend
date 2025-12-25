@@ -345,6 +345,8 @@ export default function ARViewer({ item, isOpen, onClose }) {
               // 🔒 CRITICAL: STABLE PLACEMENT
               ar-placement="floor"
               
+
+              scale="0.4 0.4 0.4"
               // 🔒 FIXED SCALE - NO AUTO-RESIZE
               // Remove ar-scale="auto" to prevent automatic resizing
               // The model will use its default scale from the GLB file
