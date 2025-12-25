@@ -6,7 +6,13 @@ export default function ARViewer({ item, isOpen, onClose }) {
   const hasAR = Boolean(glbUrl || usdzUrl);
 
   const openAR = () => {
-    document.getElementById("ar-model")?.activateAR();
+    const arViewer = document.getElementById("ar-model");
+    if (!arViewer) return;
+
+    // ✅ Keep mobile gesture context intact
+    requestAnimationFrame(() => {
+      arViewer.activateAR();
+    });
   };
 
   return (
@@ -16,7 +22,6 @@ export default function ARViewer({ item, isOpen, onClose }) {
         bg-black/60 backdrop-blur-md
         flex items-center justify-center
       "
-      onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -28,7 +33,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
           shadow-[0_20px_50px_rgba(0,0,0,0.25)]
         "
       >
-        {/* CLOSE */}
+        {/* ❌ CLOSE */}
         <button
           onClick={onClose}
           className="
@@ -49,9 +54,9 @@ export default function ARViewer({ item, isOpen, onClose }) {
 
         {hasAR ? (
           <>
-            {/* ===================== */}
-            {/* 👀 VIEWER MODEL (BIG) */}
-            {/* ===================== */}
+            {/* =============================== */}
+            {/* 👀 3D VIEWER — BIG & DETAILED */}
+            {/* =============================== */}
             <div className="rounded-2xl overflow-hidden border border-green-200 bg-white shadow-md">
               <model-viewer
                 src={glbUrl}
@@ -64,8 +69,8 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 disable-zoom
                 interaction-prompt="none"
 
-                /* BIG & BEAUTIFUL */
-                scale="1.8 1.8 1.8"
+                /* 🔥 BIG PREVIEW SIZE */
+                scale="1.7 1.7 1.7"
                 camera-orbit="45deg 65deg 6.5m"
                 field-of-view="13deg"
 
@@ -78,9 +83,9 @@ export default function ARViewer({ item, isOpen, onClose }) {
               />
             </div>
 
-            {/* ===================== */}
-            {/* 📱 AR BUTTON (EXTERNAL) */}
-            {/* ===================== */}
+            {/* =============================== */}
+            {/* 📱 AR CTA BUTTON */}
+            {/* =============================== */}
             <div className="mt-5 flex justify-center">
               <button
                 onClick={openAR}
@@ -106,9 +111,9 @@ export default function ARViewer({ item, isOpen, onClose }) {
               Works best on a flat surface like a table
             </p>
 
-            {/* ===================== */}
-            {/* 🌍 AR MODEL (SMALL) */}
-            {/* ===================== */}
+            {/* =============================== */}
+            {/* 🌍 AR MODEL — SMALL & REALISTIC */}
+            {/* =============================== */}
             <model-viewer
               id="ar-model"
               src={glbUrl}
@@ -116,7 +121,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
               ar
               ar-modes="webxr scene-viewer quick-look"
 
-              /* SMALL & REALISTIC IN AR */
+              /* ✅ SMALL REAL-WORLD SIZE */
               scale="0.20 0.20 0.20"
               ar-scale="fixed"
               ar-placement="floor"
@@ -124,7 +129,14 @@ export default function ARViewer({ item, isOpen, onClose }) {
               interaction-prompt="none"
               environment-image="neutral"
 
-              style={{ display: "none" }}
+              /* 🚨 MUST NOT be display:none */
+              style={{
+                position: "absolute",
+                width: "1px",
+                height: "1px",
+                opacity: 0,
+                pointerEvents: "none",
+              }}
             />
           </>
         ) : (
@@ -141,7 +153,6 @@ export default function ARViewer({ item, isOpen, onClose }) {
     </div>
   );
 }
-
 
 
 
