@@ -133,14 +133,14 @@ export default function ItemBottomSheet({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 bg-black/50"
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={closeSheet}
         >
           <motion.div
-            className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[32px] flex flex-col"
+            className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[32px] flex flex-col shadow-2xl"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -165,7 +165,7 @@ export default function ItemBottomSheet({
           >
             {/* HANDLE */}
             <div className="py-3 cursor-grab active:cursor-grabbing">
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
+              <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto" />
             </div>
 
             {/* CONTENT */}
@@ -182,16 +182,16 @@ export default function ItemBottomSheet({
               <img
                 src={item.imageUrl || item.thumbnailUrl}
                 alt={item.name}
-                className="w-full h-44 object-cover rounded-2xl"
+                className="w-full h-44 object-cover rounded-2xl shadow-md"
               />
 
-              <h2 className="mt-4 text-2xl font-bold">{item.name}</h2>
-              <p className="text-sm text-gray-600">{item.description}</p>
+              <h2 className="mt-4 text-2xl font-bold text-slate-800">{item.name}</h2>
+              <p className="text-sm text-slate-600">{item.description}</p>
 
               {/* VARIANTS */}
               {item.variants?.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="font-semibold mb-4">Choose a variant</h3>
+                  <h3 className="font-semibold text-slate-800 mb-4">Choose a variant</h3>
 
                   <div className="grid grid-cols-2 gap-4">
                     {item.variants.map((v) => {
@@ -202,14 +202,14 @@ export default function ItemBottomSheet({
                           key={v.name}
                           whileTap={{ scale: 0.96 }}
                           onClick={() => setSelectedVariant(v)}
-                          className={`p-4 rounded-2xl border cursor-pointer transition ${
+                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
                             selected
-                              ? "border-green-600 bg-green-50 ring-2 ring-green-500"
-                              : "border-gray-200"
+                              ? "border-amber-500 bg-amber-50 shadow-md"
+                              : "border-slate-200 hover:border-amber-300 hover:bg-slate-50"
                           }`}
                         >
-                          <p className="font-semibold">{v.name}</p>
-                          <p className="text-sm text-gray-600">₹ {v.price}</p>
+                          <p className="font-semibold text-slate-800">{v.name}</p>
+                          <p className="text-sm text-amber-600 font-semibold">₹ {v.price}</p>
                         </motion.div>
                       );
                     })}
@@ -220,10 +220,10 @@ export default function ItemBottomSheet({
               {/* ADDONS */}
               {item.addOnGroups?.map((group) => (
                 <div key={group.id} className="mt-6">
-                  <h3 className="font-semibold mb-3">
+                  <h3 className="font-semibold text-slate-800 mb-3">
                     {group.name}
                     {group.required && (
-                      <span className="text-red-500 ml-1">*</span>
+                      <span className="text-amber-600 ml-1">*</span>
                     )}
                   </h3>
 
@@ -239,14 +239,14 @@ export default function ItemBottomSheet({
                           onClick={() =>
                             selectAddon(group.id, addon)
                           }
-                          className={`flex justify-between items-center p-4 rounded-2xl border cursor-pointer ${
+                          className={`flex justify-between items-center p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
                             selected
-                              ? "border-green-600 bg-green-50 ring-1 ring-green-400"
-                              : "border-gray-200"
+                              ? "border-amber-500 bg-amber-50 shadow-sm"
+                              : "border-slate-200 hover:border-amber-300 hover:bg-slate-50"
                           }`}
                         >
-                          <span className="font-medium">{addon.name}</span>
-                          <span className="text-sm">
+                          <span className="font-medium text-slate-800">{addon.name}</span>
+                          <span className="text-sm text-amber-600 font-semibold">
                             + ₹{addon.price}
                           </span>
                         </motion.div>
@@ -258,20 +258,23 @@ export default function ItemBottomSheet({
             </div>
 
             {/* FOOTER */}
-            <div className="sticky bottom-0 bg-white border-t px-5 py-4 flex justify-between items-center">
+            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-5 py-4 flex justify-between items-center shadow-lg">
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  className="w-11 h-11 rounded-full bg-gray-100 text-xl"
+                  className="w-11 h-11 rounded-full bg-slate-100 text-slate-700 text-xl font-bold
+                           hover:bg-slate-200 active:scale-95 transition-all duration-200"
                 >
                   −
                 </button>
 
-                <span className="font-semibold text-lg">{qty}</span>
+                <span className="font-bold text-lg text-slate-800">{qty}</span>
 
                 <button
                   onClick={() => setQty((q) => q + 1)}
-                  className="w-11 h-11 rounded-full bg-green-600 text-white text-xl"
+                  className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 
+                           text-white text-xl font-bold shadow-md
+                           hover:from-amber-600 hover:to-amber-700 active:scale-95 transition-all duration-200"
                 >
                   +
                 </button>
@@ -281,7 +284,11 @@ export default function ItemBottomSheet({
                 whileTap={{ scale: 0.97 }}
                 disabled={!isValid}
                 onClick={handleAddToCart}
-                className="px-8 py-3 rounded-2xl bg-green-600 text-white font-semibold text-lg disabled:opacity-40"
+                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-700 
+                         text-white font-bold text-lg shadow-lg
+                         hover:from-slate-700 hover:to-slate-600 
+                         disabled:opacity-40 disabled:cursor-not-allowed
+                         transition-all duration-200"
               >
                 Add ₹{totalPrice}
               </motion.button>

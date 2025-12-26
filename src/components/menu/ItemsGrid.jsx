@@ -26,7 +26,6 @@ export default function ItemsGrid({
             decreaseQty={decreaseQty}
             onArView={() => onArView(item)}
           />
-
         );
       })}
     </div>

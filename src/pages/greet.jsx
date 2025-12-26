@@ -41,52 +41,52 @@ export default function Greet() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-6 bg-gradient-to-b from-green-50 to-green-100">
+    <div className="min-h-screen flex flex-col justify-center items-center px-6 bg-gradient-to-br from-slate-50 via-white to-amber-50">
 
-        {/* SUCCESS ICON */}
-    <div className="relative mb-4 mt-4 flex justify-center">
-      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-600 rounded-full flex items-center justify-center 
-          shadow-xl animate-bounce-slow overflow-hidden">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-10 h-10 sm:w-14 sm:h-14 text-white animate-scaleTick"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-        >
-          <path d="M5 13l4 4L19 7" />
-        </svg>
+      {/* SUCCESS ICON */}
+      <div className="relative mb-4 mt-4 flex justify-center">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full 
+                      flex items-center justify-center shadow-xl animate-bounce-slow overflow-hidden">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-10 h-10 sm:w-14 sm:h-14 text-white animate-scaleTick"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
       </div>
-    </div>
-
 
       {/* TEXT */}
-      <h1 className="text-3xl font-extrabold text-green-700 text-center animate-fadeIn">
+      <h1 className="text-3xl font-bold text-slate-800 text-center animate-fadeIn">
         Thank You! 🎉
       </h1>
 
-      <p className="text-lg text-gray-700 max-w-md text-center mt-3 animate-fadeIn delay-200">
+      <p className="text-lg text-slate-600 max-w-md text-center mt-3 animate-fadeIn delay-200">
         Your order has been successfully placed.  
         Our team is preparing your delicious food 🍽️  
-        We’ll serve it shortly!
+        We'll serve it shortly!
       </p>
 
       {/* Order more */}
       <button
         onClick={() => navigate(`/${params.id}`)}
-        className="mt-8 bg-green-600 text-white px-8 py-3 rounded-full text-lg font-semibold 
-        shadow-lg hover:bg-green-700 transition-all animate-fadeIn delay-400"
+        className="mt-8 bg-gradient-to-r from-slate-800 to-slate-700 text-white px-8 py-3 rounded-full 
+                 text-lg font-bold shadow-lg hover:from-slate-700 hover:to-slate-600
+                 hover:shadow-xl active:scale-95 transition-all animate-fadeIn delay-400"
       >
         Order More
       </button>
 
       {/* REVIEW SECTION */}
-      <div className="mt-10 w-full max-w-md bg-white p-6 rounded-2xl shadow-lg animate-fadeIn delay-400">
+      <div className="mt-10 w-full max-w-md bg-white p-6 rounded-2xl shadow-lg border border-slate-200 animate-fadeIn delay-400">
 
         {!submitted ? (
           <>
-            <h2 className="text-xl font-bold text-green-800 text-center mb-2">Rate Your Experience</h2>
+            <h2 className="text-xl font-bold text-slate-800 text-center mb-2">Rate Your Experience</h2>
 
             {/* USERNAME FIELD */}
             <input
@@ -94,7 +94,9 @@ export default function Greet() {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Your Name (optional)"
-              className="mt-3 w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="mt-3 w-full p-3 border-2 border-slate-200 rounded-lg 
+                       focus:ring-2 focus:ring-amber-400 focus:border-amber-400
+                       transition-all duration-200"
             />
 
             {/* Stars */}
@@ -108,7 +110,7 @@ export default function Greet() {
                   onMouseLeave={() => setHover(0)}
                   className="text-3xl px-1 focus:outline-none transform transition-transform hover:scale-110"
                 >
-                  <span className={(s <= (hover || rating)) ? "text-yellow-500 drop-shadow" : "text-gray-300"}>
+                  <span className={(s <= (hover || rating)) ? "text-amber-500 drop-shadow" : "text-slate-300"}>
                     ★
                   </span>
                 </button>
@@ -119,7 +121,9 @@ export default function Greet() {
             <textarea
               value={review}
               onChange={(e) => setReview(e.target.value)}
-              className="mt-4 w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="mt-4 w-full p-3 border-2 border-slate-200 rounded-lg 
+                       focus:ring-2 focus:ring-amber-400 focus:border-amber-400
+                       transition-all duration-200"
               rows="3"
               placeholder="Write your review (optional)"
             />
@@ -129,10 +133,10 @@ export default function Greet() {
               <button
                 onClick={submitReview}
                 disabled={loading}
-                className={`flex-1 py-2 rounded-lg font-semibold ${
+                className={`flex-1 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
                   loading
-                    ? "bg-gray-300 text-gray-600"
-                    : "bg-green-600 text-white hover:bg-green-700"
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-slate-800 to-slate-700 text-white hover:from-slate-700 hover:to-slate-600 shadow-md hover:shadow-lg"
                 }`}
               >
                 {loading ? "Submitting..." : "Submit Review"}
@@ -144,7 +148,8 @@ export default function Greet() {
                   setReview("");
                   setUserName("");
                 }}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100"
+                className="px-4 py-2.5 rounded-lg border-2 border-slate-200 text-slate-700 
+                         hover:bg-slate-50 transition-all duration-200 font-semibold"
               >
                 Clear
               </button>
@@ -153,7 +158,7 @@ export default function Greet() {
         ) : (
           // AFTER SUBMISSION UI
           <div className="flex flex-col items-center animate-fadeIn">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2">
+            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-10 h-10"
@@ -165,8 +170,8 @@ export default function Greet() {
               </svg>
             </div>
 
-            <h3 className="text-lg font-bold text-green-700">Thanks for your review!</h3>
-            <p className="text-gray-600 text-center mt-1">
+            <h3 className="text-lg font-bold text-slate-800">Thanks for your review!</h3>
+            <p className="text-slate-600 text-center mt-1">
               Your feedback helps this restaurant improve 🍽️💚
             </p>
           </div>
@@ -176,13 +181,13 @@ export default function Greet() {
       {/* View All Reviews Link */}
       <button
         onClick={() => navigate(`/reviews/${params.id}`)}
-        className="mt-3 text-green-700 underline"
+        className="mt-3 text-amber-600 font-semibold underline hover:text-amber-700 transition-colors"
       >
         View All Reviews
       </button>
 
       {/* FOOTER */}
-      <p className="text-gray-500 text-sm mt-6 animate-fadeIn delay-600">
+      <p className="text-slate-500 text-sm mt-6 animate-fadeIn delay-600">
         © 2025 DishPop — Serving Happiness 💚
       </p>
 

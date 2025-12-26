@@ -1,20 +1,21 @@
 export default function CartHeader({ cart, navigate, username }) {
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-20 py-4">
+    <header className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-20 py-4 border-b border-slate-200">
       <div className="max-w-screen-xl mx-auto px-4 flex justify-between items-center">
-        <h1 className="text-2xl font-extrabold text-green-700">
+        <h1 className="text-2xl font-bold text-slate-800">
           Your Cart
         </h1>
 
         <button
-          onClick={() => navigate(`/cart/${username}`)}
-          className="relative bg-green-600 text-white px-4 py-2 rounded-full shadow-lg 
-            hover:bg-green-700 transition font-semibold"
+          onClick={() => navigate(`/menu/${username}`)}
+          className="bg-gradient-to-r from-slate-800 to-slate-700 text-white px-6 py-2.5 rounded-full 
+                   shadow-md hover:shadow-lg hover:from-slate-700 hover:to-slate-600
+                   active:scale-95 transition-all duration-200 font-semibold
+                   flex items-center gap-2"
         >
-          🛒 Cart
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-            {cart.reduce((a, b) => a + b.qty, 0)}
-          </span>
+          ← Back to Menu
         </button>
       </div>
     </header>

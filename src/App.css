@@ -93,3 +93,65 @@
 .animate-popUp {
   animation: popUp 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ---------------------------
+   Scrollbar Styles - AGGRESSIVE HIDING
+   --------------------------- */
+
+/* Hide scrollbar utility class */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* COMPLETELY HIDE all scrollbars */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+*::-webkit-scrollbar-track {
+  display: none !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  display: none !important;
+}
+
+body, html {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+  overflow-x: hidden;
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure root element also hides scrollbar */
+#root {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+#root::-webkit-scrollbar {
+  display: none !important;
+}

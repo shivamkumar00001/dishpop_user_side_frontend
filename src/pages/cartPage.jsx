@@ -62,19 +62,28 @@ export default function CartPage() {
 
   /* ---------------- UI ---------------- */
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50 flex flex-col">
       <CartHeader cart={cart} navigate={navigate} username={username} />
 
       <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {cart.length === 0 ? (
           <div className="mt-20 text-center px-4">
-            <p className="text-lg sm:text-xl font-semibold text-gray-600">
-              Your cart is empty 🍃
+            <div className="mx-auto mb-6 h-20 w-20 flex items-center justify-center rounded-full bg-slate-100">
+              <span className="text-4xl">🛒</span>
+            </div>
+            <p className="text-lg sm:text-xl font-bold text-slate-800 mb-2">
+              Your cart is empty
+            </p>
+            <p className="text-slate-600 mb-6">
+              Add some delicious items to get started
             </p>
 
             <button
               onClick={() => navigate(`/menu/${username}`)}
-              className="mt-6 bg-green-600 px-6 sm:px-8 py-3 text-white rounded-xl"
+              className="bg-gradient-to-r from-slate-800 to-slate-700 text-white 
+                       px-6 sm:px-8 py-3 rounded-xl font-bold shadow-lg
+                       hover:from-slate-700 hover:to-slate-600 hover:shadow-xl
+                       active:scale-95 transition-all duration-200"
             >
               Browse Menu
             </button>
@@ -94,7 +103,7 @@ export default function CartPage() {
             </section>
 
             {/* SUMMARY */}
-            <aside className="lg:sticky lg:top-24">
+            <aside className="lg:sticky lg:top-24 lg:self-start">
               <CartSummary
                 totalAmount={totalAmount}
                 navigate={navigate}
@@ -105,7 +114,7 @@ export default function CartPage() {
         )}
       </main>
 
-      <footer className="text-center text-gray-500 py-4 sm:py-6 text-sm">
+      <footer className="text-center text-slate-500 py-4 sm:py-6 text-sm border-t border-slate-200">
         © 2025 DishPop — Order Happiness 🍽️
       </footer>
     </div>
