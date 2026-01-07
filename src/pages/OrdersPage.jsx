@@ -9,20 +9,38 @@ export default function OrdersPage() {
   const ordersKey = `orders_${id}`;
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(ordersKey)) || [];
+    const savedRaw = JSON.parse(localStorage.getItem(ordersKey)) || [];
 
-    // 🔥 Auto-delete expired orders
-    const now = Date.now();
-    const validOrders = saved.filter(
-      (order) => order.expiresAt > now
-    );
+    let flattenedOrders = [];
 
-    if (validOrders.length !== saved.length) {
-      localStorage.setItem(
-        ordersKey,
-        JSON.stringify(validOrders)
-      );
+    // ✅ NEW FORMAT (session-based object)
+    if (
+      savedRaw &&
+      typeof savedRaw === "object" &&
+      !Array.isArray(savedRaw)
+    ) {
+      Object.values(savedRaw).forEach((session) => {
+        session.orders.forEach((order) => {
+          flattenedOrders.push({
+            ...order,
+            customerName: session.customerName,
+            phoneNumber: session.phoneNumber,
+            tableNumber: session.tableNumber,
+            description: order.description,
+          });
+        });
+      });
     }
+    // ✅ OLD FORMAT (array)
+    else if (Array.isArray(savedRaw)) {
+      flattenedOrders = savedRaw;
+    }
+
+    // 🔥 Existing expiry logic (kept)
+    const now = Date.now();
+    const validOrders = flattenedOrders.filter(
+      (order) => !order.expiresAt || order.expiresAt > now
+    );
 
     setOrders(validOrders);
   }, [ordersKey]);
@@ -130,7 +148,6 @@ export default function OrdersPage() {
                           {item.name} × {item.qty}
                         </p>
 
-                        {/* VARIANT */}
                         {item.variant && (
                           <p className="text-sm text-slate-600">
                             Variant: {item.variant.name} (₹
@@ -138,7 +155,6 @@ export default function OrdersPage() {
                           </p>
                         )}
 
-                        {/* ADDONS */}
                         {item.addons?.length > 0 && (
                           <div className="mt-1 space-y-0.5">
                             {item.addons.map((addon) => (

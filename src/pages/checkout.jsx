@@ -11,6 +11,7 @@ export default function CheckoutPage() {
   const { id: username } = useParams();
 
   const cartKey = `cart_${username}`;
+  const ordersKey = `orders_${username}`;
 
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,10 @@ export default function CheckoutPage() {
     tableNumber: "",
     description: "",
   });
+
+  /* ---------------- SESSION ---------------- */
+  const sessionId = localStorage.getItem("sessionId");
+  const hasActiveSession = Boolean(sessionId);
 
   /* ---------------- LOAD CART ---------------- */
   useEffect(() => {
@@ -42,8 +47,6 @@ export default function CheckoutPage() {
   };
 
   /* ---------------- CHECKOUT ---------------- */
-  const ordersKey = `orders_${username}`;
-
   const handleCheckout = async () => {
     if (!username) return alert("Invalid restaurant link");
     if (!details.name || !details.tableNumber)
@@ -53,7 +56,8 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const items = cart.map(item => {
+      /* -------- NORMALIZE ITEMS -------- */
+      const items = cart.map((item) => {
         const addonsTotal =
           item.addons?.reduce((s, a) => s + a.price, 0) || 0;
 
@@ -64,59 +68,73 @@ export default function CheckoutPage() {
           itemId: item.itemId || item.id,
           name: item.name,
           imageUrl: item.imageUrl || "",
-
           variant: item.variant,
           addons: item.addons || [],
-
           qty: item.qty,
           unitPrice,
           totalPrice,
         };
       });
 
-      const grandTotal = items.reduce(
+      const calculatedGrandTotal = items.reduce(
         (sum, i) => sum + i.totalPrice,
         0
       );
 
+      /* -------- PAYLOAD -------- */
       const payload = {
         customerName: details.name.trim(),
         phoneNumber: details.phone || "",
         tableNumber: Number(details.tableNumber),
         description: details.description || "",
         items,
-        grandTotal,
+        grandTotal: calculatedGrandTotal,
+        ...(hasActiveSession && { sessionId }),
       };
 
-      // ✅ BACKEND
-      await api.post(`/api/checkout/${username}`, payload);
+      /* -------- BACKEND CALL -------- */
+      const res = await api.post(`/api/checkout/${username}`, payload);
 
-      // ✅ BUILD LOCAL ORDER
-      const newOrder = {
+      const activeSessionId =
+        res.data.sessionId || sessionId;
+
+      /* -------- SAVE SESSION -------- */
+      if (activeSessionId) {
+        localStorage.setItem("sessionId", activeSessionId);
+      }
+
+      /* -------- LOCAL ORDER STORAGE (SESSION AWARE) -------- */
+      const storedOrders =
+        JSON.parse(localStorage.getItem(ordersKey)) || {};
+
+      if (!storedOrders[activeSessionId]) {
+        storedOrders[activeSessionId] = {
+          sessionId: activeSessionId,
+          tableNumber: payload.tableNumber,
+          customerName: payload.customerName,
+          phoneNumber: payload.phoneNumber,
+          orders: [],
+          createdAt: Date.now(),
+        };
+      }
+
+      storedOrders[activeSessionId].orders.push({
         id: Date.now(),
-        customerName: payload.customerName,
-        phoneNumber: payload.phoneNumber,
-        tableNumber: payload.tableNumber,
-        description: payload.description,
         items,
-        totalAmount: grandTotal,
-        grandTotal: grandTotal,
+        totalAmount: calculatedGrandTotal,
         timestamp: Date.now(),
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
-      };
-
-      const existingOrders =
-        JSON.parse(localStorage.getItem(ordersKey)) || [];
+      });
 
       localStorage.setItem(
         ordersKey,
-        JSON.stringify([newOrder, ...existingOrders])
+        JSON.stringify(storedOrders)
       );
 
-      // ✅ CLEAR CART & REDIRECT
+      /* -------- CLEAR CART -------- */
       localStorage.removeItem(cartKey);
-      navigate(`/greet/${username}`);
 
+      /* -------- REDIRECT -------- */
+      navigate(`/greet/${username}`);
     } catch (err) {
       alert(err.message || "Checkout failed");
     } finally {
@@ -133,6 +151,7 @@ export default function CheckoutPage() {
         <CustomerDetails
           details={details}
           handleChange={handleChange}
+          hasActiveSession={hasActiveSession}
         />
 
         <OrderSummary
@@ -140,6 +159,7 @@ export default function CheckoutPage() {
           totalAmount={grandTotal}
           loading={loading}
           handleCheckout={handleCheckout}
+          hasActiveSession={hasActiveSession}
         />
       </div>
     </div>

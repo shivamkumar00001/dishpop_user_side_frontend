@@ -119,7 +119,9 @@ import api from "../lib/api";
 export default function usePaginatedMenu(
   username,
   search,
-  LIMIT = 15
+  tags = [],
+  LIMIT = 15,
+  category = null
 ) {
   const [menu, setMenu] = useState([]);
   const [items, setItems] = useState([]);
@@ -130,7 +132,6 @@ export default function usePaginatedMenu(
   const [initialLoading, setInitialLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
 
-  // 🔥 SUBSCRIPTION STATES
   const [notSubscribed, setNotSubscribed] = useState(false);
   const [subscriptionReason, setSubscriptionReason] = useState(null);
 
@@ -143,16 +144,18 @@ export default function usePaginatedMenu(
     setIsFetching(true);
 
     try {
-      const res = await api.get(
-        `/api/user/${username}/menu`,
-        {
-          params: {
-            page,
-            limit: LIMIT,
-            ...(search && { search }),
-          },
-        }
-      );
+      const endpoint = category
+        ? `/api/user/${username}/menu/category/${category}`
+        : `/api/user/${username}/menu`;
+
+      const res = await api.get(endpoint, {
+        params: {
+          page,
+          limit: LIMIT,
+          ...(search && { search }),
+          ...(tags.length > 0 && { tags: tags.join(",") }),
+        },
+      });
 
       const newMenu = res.data.menu || [];
       const { hasMore: more } = res.data.pagination || {};
@@ -183,25 +186,30 @@ export default function usePaginatedMenu(
       setPage((p) => p + 1);
 
     } catch (err) {
-      // 🔥 HANDLE SUBSCRIPTION BLOCK
       if (err?.response?.status === 403) {
         setNotSubscribed(true);
         setHasMore(false);
-        setSubscriptionReason(
-          err.response?.data?.reason || "DEFAULT"
-        );
+        setSubscriptionReason(err.response?.data?.reason || "DEFAULT");
       }
     } finally {
       setIsFetching(false);
-
       if (!firstLoadDoneRef.current) {
         setInitialLoading(false);
         firstLoadDoneRef.current = true;
       }
     }
-  }, [username, search, page, hasMore, isFetching, LIMIT, notSubscribed]);
+  }, [
+    username,
+    search,
+    tags,
+    page,
+    hasMore,
+    isFetching,
+    LIMIT,
+    notSubscribed,
+    category,
+  ]);
 
-  // 🔥 RESET ON USER / SEARCH CHANGE
   useEffect(() => {
     if (!username) return;
 
@@ -209,9 +217,9 @@ export default function usePaginatedMenu(
     setPage(1);
     setHasMore(true);
     setNotSubscribed(false);
-    setSubscriptionReason(null); // 🔥 reset
+    setSubscriptionReason(null);
     firstLoadDoneRef.current = false;
-  }, [username, search]);
+  }, [username, search, tags, category]);
 
   useEffect(() => {
     if (page === 1) fetchPage();
@@ -225,10 +233,6 @@ export default function usePaginatedMenu(
     initialLoading,
     isFetching,
     notSubscribed,
-    subscriptionReason, // 🔥 EXPOSE THIS
+    subscriptionReason,
   };
 }
-
-
-
-

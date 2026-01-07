@@ -1,30 +1,59 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import Header from "../components/menu/Header";
-import SearchBar from "../components/menu/SearchBar";
-import CategorySelector from "../components/menu/CategorySelector";
+
+import CategoryGrid from "../components/menu/CategoryGrid";
+import api from "../lib/api";
+import LowestPriceItems from "../components/menu/LowestPriceItems.jsx";
+import SeasonalItems from "../components/menu/SeasonalItems";
+import { useMemo } from "react";
+
 import ItemsGrid from "../components/menu/ItemsGrid";
 import ItemBottomSheet from "../components/menu/ItemBottomSheet";
 import CartBar from "../components/menu/CartBar";
 import InfiniteLoader from "../components/menu/InfiniteLoader";
 import MenuLoader from "../components/menu/MenuLoader";
 import ARViewer from "../components/menu/ARViewer";
+import SearchHero from "../components/menu/SearchHero";
+import TagFilter from "../components/menu/TagFilter";
 
 import usePaginatedMenu from "../hooks/usePaginatedMenu";
 import useDebounce from "../hooks/useDebounce";
 
 import { incrementARStat } from "../services/arStats.service";
+import CategorySection from "../components/menu/CategorySection.jsx";
+import SearchBar from "../components/menu/SearchBar.jsx";
+import MenuJump from "../components/menu/MenuJump.jsx";
+
+const TAG_META = {
+  "chef-special": { label: "Chef Special", icon: "👨‍🍳" },
+  "most-loved": { label: "Most Loved", icon: "❤️" },
+  trending: { label: "Trending", icon: "🔥" },
+  spicy: { label: "Spicy", icon: "🌶️" },
+  "best-seller": { label: "Best Seller", icon: "⭐" },
+  "new-arrival": { label: "New", icon: "🆕" },
+  seasonal: { label: "Seasonal", icon: "❄️" },
+  signature: { label: "Signature", icon: "✍️" },
+};
+
 
 export default function MenuPage() {
   const { id: username } = useParams();
   const navigate = useNavigate();
+  const [lowestItems, setLowestItems] = useState([]);
+  const [seasonalItems, setSeasonalItems] = useState([]);
+const [allItems, setAllItems] = useState([]);
+const [showCart, setShowCart] = useState(false);
 
   // All hooks must be called in the same order every render
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 400);
-  
+  const [selectedTags, setSelectedTags] = useState([]);
+ const [categoryPreview, setCategoryPreview] = useState([]);
+ const [categoryLoading, setCategoryLoading] = useState(true);
+const categoryRefs = useRef({});
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [arItem, setArItem] = useState(null);
   const [showArViewer, setShowArViewer] = useState(false);
@@ -40,6 +69,9 @@ export default function MenuPage() {
       return [];
     }
   });
+  
+
+ 
 
   // Custom hook call - must be before any early returns
   const {
@@ -51,7 +83,7 @@ export default function MenuPage() {
     initialLoading,
     notSubscribed,
     subscriptionReason,
-  } = usePaginatedMenu(username, debouncedSearch);
+  } = usePaginatedMenu(username, debouncedSearch, selectedTags);
 
   // Effects after all hooks
   useEffect(() => {
@@ -61,6 +93,50 @@ export default function MenuPage() {
       console.error("Failed to save cart:", error);
     }
   }, [cart, cartKey]);
+  
+
+  useEffect(() => {
+  if (!username) return;
+
+  api
+    .get(`/api/user/${username}/menu/seasonal`)
+    .then((res) => {
+      setSeasonalItems(res.data.data || []);
+    })
+    .catch(() => setSeasonalItems([]));
+}, [username]);
+
+   
+  useEffect(() => {
+  if (!username) return;
+
+  api
+    .get(`/api/user/${username}/menu/lowest-price`)
+    .then((res) => {
+      setLowestItems(res.data.data || []);
+    })
+    .catch(() => setLowestItems([]));
+}, [username]);
+
+
+     useEffect(() => {
+  if (!username) return;
+
+  setCategoryLoading(true);
+
+  api
+    .get(`/api/user/${username}/menu/category-preview`)
+    .then((res) => {
+      setCategoryPreview(res.data.data || []);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch category preview", err);
+      setCategoryPreview([]);
+    })
+    .finally(() => {
+      setCategoryLoading(false);
+    });
+}, [username]);
 
   useEffect(() => {
     if (!loaderRef.current) return;
@@ -107,16 +183,42 @@ export default function MenuPage() {
 
     arViewedRef.current.add(item.id);
   };
+  useEffect(() => {
+  if (items.length && allItems.length === 0) {
+    setAllItems(items);
+  }
+}, [items, allItems.length]);
 
-  // Computed values
-  const visibleCategories = menu
-    .filter((c) => c.dishes.length > 0)
-    .map((c) => c.name);
 
-  const visibleItems =
-    activeCategory === "All"
-      ? items
-      : items.filter((i) => i.category?.name === activeCategory);
+useEffect(() => {
+  setAllItems([]);
+}, [username, debouncedSearch]);
+
+const availableTags = useMemo(() => {
+  const set = new Set();
+
+  allItems.forEach((item) => {
+    // tagDetails based tags
+    if (Array.isArray(item.tags)) {
+      item.tags.forEach((tag) => {
+        if (tag?.key) set.add(tag.key);
+      });
+    }
+
+    // optional: food type tags (only if you want them)
+    // if (item.foodType === "veg") set.add("veg");
+    // if (item.foodType === "non-veg") set.add("non-veg");
+  });
+
+  return [...set].filter((tag) => TAG_META[tag]);
+}, [allItems]);
+
+
+  // // Computed values
+  // const visibleCategories = menu
+  //   .filter((c) => c.dishes.length > 0)
+  //   .map((c) => c.name);
+  
 
   const showInitialLoader = initialLoading && items.length === 0;
 
@@ -168,17 +270,79 @@ export default function MenuPage() {
     );
   }
 
+  const handleAddFromLowest = async (item) => {
+  try {
+    const res = await api.get(
+      `/api/user/${username}/dish/${item.id}`
+    );
+
+    setSelectedItem(res.data.data);
+  } catch (err) {
+    console.error("Failed to fetch full dish details", err);
+  }
+};
+
+const visibleCategories = useMemo(() => {
+  return menu.filter(
+    (category) =>
+      Array.isArray(category.dishes) &&
+      category.dishes.length > 0
+  );
+}, [menu]);
+
+
   // Main render
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50/30 pb-32 overflow-x-hidden">
-      <Header navigate={navigate} cart={cart} params={{ id: username }} />
+ // CORRECTED MenuPage.jsx structure
 
-      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+// Main render
+return (
+  <>
+   <SearchBar
+  value={searchQuery}
+  onChange={setSearchQuery}
+  cartCount={cart.length}
+/>
 
-      <CategorySelector
-        categories={["All", ...visibleCategories]}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
+    
+    {/* Main scrollable container */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50/30 pb-32">
+      
+      {/* SearchHero with top padding - IMPORTANT: No overflow hidden on parents */}
+      <div className="pt-[62px]">
+        <SearchHero
+          username={username}
+          onItemClick={(item) => setSelectedItem(item)}
+        />
+      </div>
+
+      {/* Category Grid */}
+      {categoryLoading ? (
+        <div className="max-w-screen-xl mx-auto px-4 mt-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-2xl bg-slate-200 animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <CategoryGrid
+          categories={categoryPreview}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+        />
+      )}
+
+      <LowestPriceItems items={lowestItems} onAdd={handleAddFromLowest} />
+      <SeasonalItems items={seasonalItems} onAdd={(item) => setSelectedItem(item)} />
+
+      {/* TAG FILTER - This should now stick properly */}
+      <TagFilter
+        tags={availableTags}
+        selectedTags={selectedTags}
+        meta={TAG_META}
+        onToggle={(tag) =>
+          setSelectedTags((prev) =>
+            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+          )
+        }
       />
 
       {showInitialLoader && (
@@ -187,15 +351,28 @@ export default function MenuPage() {
         </div>
       )}
 
-      <ItemsGrid
-        items={visibleItems}
+<div className="max-w-screen-xl mx-auto px-4">
+  {visibleCategories.map((category) => (
+    <div
+      key={category.id}
+      ref={(el) => {
+        categoryRefs.current[category.name] = el;
+      }}
+      className="scroll-mt-32"
+    >
+      <CategorySection
+        title={category.name}
+        items={category.dishes}
         cart={cart}
-        addToCart={(item) => setSelectedItem(item)}
+        addToCart={setSelectedItem}
         openItemSheet={setSelectedItem}
         increaseQty={increaseQty}
         decreaseQty={decreaseQty}
         onArView={handleArView}
       />
+    </div>
+  ))}
+</div>
 
       <div ref={loaderRef}>
         <InfiniteLoader hasMore={hasMore} isFetching={isFetching} />
@@ -222,8 +399,14 @@ export default function MenuPage() {
           }}
         />
       )}
+      <MenuJump
+        categories={visibleCategories}
+        categoryRefs={categoryRefs}
+      />
+
 
       <CartBar cart={cart} />
     </div>
-  );
+  </>
+);
 }
