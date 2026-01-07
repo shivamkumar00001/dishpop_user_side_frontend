@@ -259,7 +259,7 @@ function Feature({ icon: Icon, title, text }) {
   return (
     <div className="p-6 bg-white rounded-3xl shadow hover:shadow-xl transition">
       <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Icon className="w-7 h-7 text-green-700" />
+        <Icon className="w-7 h-7 text-green-701" />
       </div>
       <h3 className="font-bold text-lg mb-2">{title}</h3>
       <p className="text-sm text-gray-600">{text}</p>
