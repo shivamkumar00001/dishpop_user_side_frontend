@@ -854,6 +854,7 @@ export default function CheckoutPage() {
         totalPrice: item.totalPrice,
       }));
 
+      /* -------- PAYLOAD -------- */
       const payload = {
         customerName: details.name,
         phoneNumber: details.phone,

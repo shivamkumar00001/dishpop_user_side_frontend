@@ -139,8 +139,16 @@ export default function ItemBottomSheet({
           exit={{ opacity: 0 }}
           onClick={closeSheet}
         >
-          <motion.div
-            className="absolute bottom-0 w-full h-[70vh] bg-white rounded-t-[32px] flex flex-col shadow-2xl"
+         <motion.div
+            className="
+              absolute bottom-0 w-full h-[70vh]
+              bg-gradient-to-br from-emerald-50/95 to-white
+              backdrop-blur-xl
+              rounded-t-[36px]
+              flex flex-col
+              shadow-[0_-20px_60px_rgba(16,185,129,0.35)]
+            "
+
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -165,8 +173,9 @@ export default function ItemBottomSheet({
           >
             {/* HANDLE */}
             <div className="py-3 cursor-grab active:cursor-grabbing">
-              <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto" />
+              <div className="w-12 h-1.5 bg-emerald-300 rounded-full mx-auto" />
             </div>
+
 
             {/* CONTENT */}
             <div
@@ -176,40 +185,80 @@ export default function ItemBottomSheet({
               style={{
                 overscrollBehavior: "contain",
                 WebkitOverflowScrolling: "touch",
-                touchAction: "pan-y"
+                touchAction: "pan-y",
               }}
             >
-              <img
-                src={item.imageUrl || item.thumbnailUrl}
-                alt={item.name}
-                className="w-full h-44 object-cover rounded-2xl shadow-md"
-              />
+            <img
+              src={item.imageUrl || item.thumbnailUrl}
+              alt={item.name}
+              className="
+                w-full h-44 object-cover
+                rounded-3xl
+                shadow-[0_12px_40px_rgba(0,0,0,0.15)]
+              "
+            />
 
-              <h2 className="mt-4 text-2xl font-bold text-slate-800">{item.name}</h2>
-              <p className="text-sm text-slate-600">{item.description}</p>
+            <h2 className="mt-4 text-2xl font-black text-emerald-900">
+              {item.name}
+            </h2>
+
+            <p className="text-sm text-emerald-700/80">
+              {item.description}
+            </p>
+
+              {/* ✅ TAGS (ADDED) */}
+              {item.tags?.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {item.tags.map((tag) => (
+                  <span
+                    className="
+                      inline-flex items-center gap-1
+                      px-3 py-1 rounded-full
+                      text-xs font-semibold
+                      bg-emerald-100/80
+                      text-emerald-700
+                      border border-emerald-200
+                    "
+                  >
+
+                      <span>{tag.icon}</span>
+                      <span>{tag.name}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* VARIANTS */}
               {item.variants?.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="font-semibold text-slate-800 mb-4">Choose a variant</h3>
+                  <h3 className="font-semibold text-slate-800 mb-4">
+                    Choose a variant
+                  </h3>
 
                   <div className="grid grid-cols-2 gap-4">
                     {item.variants.map((v) => {
-                      const selected = selectedVariant?.name === v.name;
+                      const selected =
+                        selectedVariant?.name === v.name;
 
                       return (
                         <motion.div
                           key={v.name}
                           whileTap={{ scale: 0.96 }}
                           onClick={() => setSelectedVariant(v)}
-                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                          className={`p-4 rounded-3xl border-2 cursor-pointer transition-all duration-200 ${
                             selected
-                              ? "border-amber-500 bg-amber-50 shadow-md"
-                              : "border-slate-200 hover:border-amber-300 hover:bg-slate-50"
+                              ? "border-emerald-500 bg-emerald-50 shadow-[0_8px_25px_rgba(16,185,129,0.3)]"
+                              : "border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40"
                           }`}
+
                         >
-                          <p className="font-semibold text-slate-800">{v.name}</p>
-                          <p className="text-sm text-amber-600 font-semibold">₹ {v.price}</p>
+                          <p className="font-semibold text-slate-800">
+                            {v.name}
+                          </p>
+                          <p className="text-sm text-emerald-700 font-bold">
+                            ₹ {v.price}
+                          </p>
+
                         </motion.div>
                       );
                     })}
@@ -239,16 +288,20 @@ export default function ItemBottomSheet({
                           onClick={() =>
                             selectAddon(group.id, addon)
                           }
-                          className={`flex justify-between items-center p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                            selected
-                              ? "border-amber-500 bg-amber-50 shadow-sm"
-                              : "border-slate-200 hover:border-amber-300 hover:bg-slate-50"
-                          }`}
+                          className={`flex justify-between items-center p-4 rounded-3xl border-2 cursor-pointer transition-all duration-200 ${
+                          selected
+                            ? "border-emerald-500 bg-emerald-50 shadow-sm"
+                            : "border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40"
+                        }`}
+
                         >
-                          <span className="font-medium text-slate-800">{addon.name}</span>
-                          <span className="text-sm text-amber-600 font-semibold">
-                            + ₹{addon.price}
+                          <span className="font-medium text-slate-800">
+                            {addon.name}
                           </span>
+<span className="text-sm text-emerald-700 font-semibold">
+  + ₹{addon.price}
+</span>
+
                         </motion.div>
                       );
                     })}
@@ -258,23 +311,47 @@ export default function ItemBottomSheet({
             </div>
 
             {/* FOOTER */}
-            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-5 py-4 flex justify-between items-center shadow-lg">
+           <div
+  className="
+    sticky bottom-0
+    bg-white/85 backdrop-blur-xl
+    border-t border-emerald-200/40
+    px-5 py-4
+    flex justify-between items-center
+    shadow-[0_-10px_30px_rgba(0,0,0,0.1)]
+  "
+>
+
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  className="w-11 h-11 rounded-full bg-slate-100 text-slate-700 text-xl font-bold
-                           hover:bg-slate-200 active:scale-95 transition-all duration-200"
+                 className="
+    w-11 h-11 rounded-full
+    bg-emerald-100
+    text-emerald-700 text-xl font-bold
+    hover:bg-emerald-200
+    active:scale-95
+    transition-all duration-200
+  "
                 >
                   −
                 </button>
 
-                <span className="font-bold text-lg text-slate-800">{qty}</span>
+                <span className="font-bold text-lg text-slate-800">
+                  {qty}
+                </span>
 
                 <button
                   onClick={() => setQty((q) => q + 1)}
-                  className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 
-                           text-white text-xl font-bold shadow-md
-                           hover:from-amber-600 hover:to-amber-700 active:scale-95 transition-all duration-200"
+                   className="
+    w-11 h-11 rounded-full
+    bg-gradient-to-br from-emerald-500 to-emerald-600
+    text-white text-xl font-bold
+    shadow-md
+    hover:from-emerald-600 hover:to-emerald-700
+    active:scale-95
+    transition-all duration-200
+  "
                 >
                   +
                 </button>
@@ -284,11 +361,15 @@ export default function ItemBottomSheet({
                 whileTap={{ scale: 0.97 }}
                 disabled={!isValid}
                 onClick={handleAddToCart}
-                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-700 
-                         text-white font-bold text-lg shadow-lg
-                         hover:from-slate-700 hover:to-slate-600 
-                         disabled:opacity-40 disabled:cursor-not-allowed
-                         transition-all duration-200"
+className="
+    px-8 py-3 rounded-3xl
+    bg-gradient-to-r from-emerald-600 to-emerald-700
+    text-white font-black text-lg
+    shadow-[0_12px_40px_rgba(16,185,129,0.45)]
+    hover:from-emerald-700 hover:to-emerald-800
+    disabled:opacity-40 disabled:cursor-not-allowed
+    transition-all duration-200
+  "
               >
                 Add ₹{totalPrice}
               </motion.button>
