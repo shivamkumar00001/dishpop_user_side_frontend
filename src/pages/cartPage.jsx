@@ -1171,18 +1171,27 @@
 // }
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../lib/api";
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { id: username } = useParams();
 
   const cartKey = `cart_${username}`;
+  const sessionKey = `session_${username}`;
+  const sessionMetaKey = `session_meta_${username}`;
+
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   /* ---------------- LOAD CART ---------------- */
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(cartKey)) || [];
-    setCart(saved);
+    try {
+      const saved = JSON.parse(localStorage.getItem(cartKey)) || [];
+      setCart(Array.isArray(saved) ? saved : []);
+    } catch {
+      setCart([]);
+    }
   }, [cartKey]);
 
   const updateCart = (updated) => {
@@ -1227,9 +1236,108 @@ export default function CartPage() {
     0
   );
 
-  const taxAmount = 0; // backend-ready
+  const taxAmount = 0;
   const grandTotal = itemsTotal + taxAmount;
 
+  /* ---------------- PROCEED (SESSION-AWARE) ---------------- */
+  const handleProceed = async () => {
+    if (!cart.length || loading) return;
+
+    const sessionId = localStorage.getItem(sessionKey);
+    let sessionMeta = null;
+
+    try {
+      sessionMeta = JSON.parse(localStorage.getItem(sessionMetaKey));
+    } catch {
+      sessionMeta = null;
+    }
+
+    /* FIRST ORDER */
+    if (!sessionId) {
+      navigate(`/checkout/${username}`);
+      return;
+    }
+
+    /* LOCAL DATA BROKEN */
+    if (!sessionMeta?.customerName || !sessionMeta?.tableNumber) {
+      localStorage.removeItem(sessionKey);
+      localStorage.removeItem(sessionMetaKey);
+      navigate(`/checkout/${username}`, { replace: true });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const items = cart.map((item) => ({
+        itemId: item.itemId || item.id,
+        name: item.name,
+        imageUrl: item.imageUrl || "",
+        variant: item.variant,
+        addons: item.addons || [],
+        qty: Number(item.qty),
+        unitPrice: Number(item.totalPrice) / Number(item.qty),
+        totalPrice: Number(item.totalPrice),
+      }));
+
+      await api.post(`/api/checkout/${username}`, {
+        sessionId,
+        customerName: sessionMeta.customerName,
+        tableNumber: sessionMeta.tableNumber,
+        phoneNumber: sessionMeta.phoneNumber,
+        items,
+        grandTotal,
+      });
+
+      /* SUCCESS */
+      localStorage.removeItem(cartKey);
+      setCart([]);
+      navigate(`/greet/${username}`, { replace: true });
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Session expired";
+
+      if (
+        message.toLowerCase().includes("session") ||
+        err?.response?.status === 400
+      ) {
+        localStorage.removeItem(sessionKey);
+        localStorage.removeItem(sessionMetaKey);
+        alert("Session expired. Please start a new order.");
+        navigate(`/checkout/${username}`, { replace: true });
+        return;
+      }
+
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- EMPTY CART ---------------- */
+  if (!cart.length) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center px-4">
+        <h2 className="text-lg font-semibold text-slate-800 mb-2">
+          Your cart is empty
+        </h2>
+        <p className="text-sm text-slate-500 mb-6 text-center">
+          Add items from the menu to place an order
+        </p>
+
+        <button
+          onClick={() => navigate(`/menu/${username}`)}
+          className="bg-emerald-600 hover:bg-emerald-700 
+                     text-white px-6 py-3 rounded-xl 
+                     font-semibold shadow transition"
+        >
+          Go to Menu
+        </button>
+      </div>
+    );
+  }
+
+  /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen bg-slate-100 pb-28">
       {/* HEADER */}
@@ -1357,15 +1465,18 @@ export default function CartPage() {
       {/* FOOTER CTA */}
       <footer className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
         <button
-          onClick={() => navigate(`/checkout/${username}`)}
+          disabled={loading}
+          onClick={handleProceed}
           className="w-full bg-emerald-600 hover:bg-emerald-700 
                      text-white py-4 rounded-xl 
                      font-semibold text-base 
-                     shadow-lg active:scale-[0.98] transition"
+                     shadow-lg active:scale-[0.98]
+                     disabled:opacity-60 transition"
         >
-          Proceed to Checkout
+          {loading ? "Placing Order..." : "Proceed"}
         </button>
       </footer>
     </div>
   );
 }
+

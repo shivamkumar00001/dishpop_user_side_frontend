@@ -59,19 +59,34 @@ export default function SearchHero({
             </p>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+         <div
+              className="
+                flex gap-3 pb-2
+                overflow-x-auto
+                overscroll-x-contain
+                touch-pan-x
+                snap-x snap-mandatory
+                scroll-smooth
+              "
+              style={{
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+
             {mostLoved.map((item) => (
-             <div
-  key={item.id || item._id}
-  onClick={() => onItemClick(item)}
-  className="
-    w-36 flex-shrink-0
-    rounded-xl overflow-hidden
-    bg-emerald-900/30
-    border border-white/10
-    shadow-lg cursor-pointer
-  "
->
+              <div
+              key={item.id || item._id}
+              onClick={() => onItemClick(item)}
+              className="
+                w-36 flex-shrink-0
+                snap-start
+                rounded-xl overflow-hidden
+                bg-emerald-900/30
+                border border-white/10
+                shadow-lg cursor-pointer
+              "
+            >
+
   {/* IMAGE */}
   <div className="relative h-32">
     <img
