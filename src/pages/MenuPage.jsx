@@ -57,7 +57,8 @@ const categoryRefs = useRef({});
   const [selectedItem, setSelectedItem] = useState(null);
   const [arItem, setArItem] = useState(null);
   const [showArViewer, setShowArViewer] = useState(false);
-  
+  const tagsRef = useRef(null);
+
   const arViewedRef = useRef(new Set());
   const loaderRef = useRef(null);
 
@@ -197,25 +198,61 @@ useEffect(() => {
 }, [username, debouncedSearch, selectedTags]);
 
 
+// const availableTags = useMemo(() => {
+//   const set = new Set();
+
+//   allItems.forEach((item) => {
+//     // tagDetails based tags
+//     if (Array.isArray(item.tags)) {
+//       item.tags.forEach((tag) => {
+//         if (tag?.key) set.add(tag.key);
+//       });
+//     }
+
+//     // optional: food type tags (only if you want them)
+//     // if (item.foodType === "veg") set.add("veg");
+//     // if (item.foodType === "non-veg") set.add("non-veg");
+//   });
+
+//   return [...set].filter((tag) => TAG_META[tag]);
+// }, [allItems]);
+
 const availableTags = useMemo(() => {
+  // ✅ If already computed, reuse
+  if (tagsRef.current) {
+    return tagsRef.current;
+  }
+
   const set = new Set();
 
-  allItems.forEach((item) => {
-    // tagDetails based tags
-    if (Array.isArray(item.tags)) {
-      item.tags.forEach((tag) => {
-        if (tag?.key) set.add(tag.key);
-      });
-    }
+  menu.forEach((category) => {
+    category.dishes?.forEach((item) => {
+      if (Array.isArray(item.tags)) {
+        item.tags.forEach((tag) => {
+          const key =
+            typeof tag === "string"
+              ? tag
+              : tag?.key || tag?.slug;
 
-    // optional: food type tags (only if you want them)
-    // if (item.foodType === "veg") set.add("veg");
-    // if (item.foodType === "non-veg") set.add("non-veg");
+          if (key && TAG_META[key]) {
+            set.add(key);
+          }
+        });
+      }
+    });
   });
 
-  return [...set].filter((tag) => TAG_META[tag]);
-}, [allItems]);
+  const stableTags = Array.from(set);
 
+  // ✅ cache permanently
+  tagsRef.current = stableTags;
+
+  return stableTags;
+}, [menu]);
+
+useEffect(() => {
+  tagsRef.current = null;
+}, [username]);
 
   // // Computed values
   // const visibleCategories = menu

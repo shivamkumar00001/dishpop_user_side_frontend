@@ -25,7 +25,6 @@ export default function CategoryGrid({ categories }) {
             className="flex gap-4 sm:gap-6 overflow-x-auto pb-2"
             style={{
               WebkitOverflowScrolling: "touch",
-              touchAction: "pan-x",
             }}
           >
             {row.map((cat) => (

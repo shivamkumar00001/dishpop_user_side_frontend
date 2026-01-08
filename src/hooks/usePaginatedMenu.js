@@ -367,6 +367,151 @@
 
 
 
+// import { useEffect, useState, useCallback, useRef } from "react";
+// import api from "../lib/api";
+
+// export default function usePaginatedMenu(
+//   username,
+//   search,
+//   tags = [],
+//   LIMIT = 4,
+//   category = null
+// ) {
+//   const [menu, setMenu] = useState([]);
+//   const [items, setItems] = useState([]);
+
+//   const [page, setPage] = useState(1);
+//   const [hasMore, setHasMore] = useState(true);
+
+//   const [initialLoading, setInitialLoading] = useState(true);
+//   const [isFetching, setIsFetching] = useState(false);
+
+//   const [notSubscribed, setNotSubscribed] = useState(false);
+//   const [subscriptionReason, setSubscriptionReason] = useState(null);
+
+//   const firstLoadDoneRef = useRef(false);
+//   const silentResetRef = useRef(false);
+
+//   /* ================= FETCH PAGE ================= */
+//   const fetchPage = useCallback(async () => {
+//     if (!username || isFetching || !hasMore || notSubscribed) return;
+
+//     setIsFetching(true);
+
+//     try {
+//       const endpoint = category
+//         ? `/api/user/${username}/menu/category/${category}`
+//         : `/api/user/${username}/menu`;
+
+//       const res = await api.get(endpoint, {
+//         params: {
+//           page,
+//           limit: LIMIT,
+//           ...(search && { search }),
+//           ...(tags.length > 0 && { tags: tags.join(",") }),
+//         },
+//       });
+
+//       const newMenu = res.data.menu || [];
+//       const more = Boolean(res.data.pagination?.hasMore);
+
+//       /* ===== IMMUTABLE CATEGORY MERGE ===== */
+//       setMenu((prev) => {
+//         if (page === 1 || silentResetRef.current) {
+//           silentResetRef.current = false;
+//           return newMenu;
+//         }
+
+//         const map = new Map();
+
+//         [...prev, ...newMenu].forEach((cat) => {
+//           const id = cat.id;
+//           const existing = map.get(id);
+
+//           map.set(id, {
+//             ...cat,
+//             dishes: existing
+//               ? [...existing.dishes, ...cat.dishes]
+//               : [...cat.dishes],
+//           });
+//         });
+
+//         return Array.from(map.values());
+//       });
+
+//       const newItems = newMenu.flatMap((cat) => cat.dishes);
+
+//       setItems((prev) =>
+//         page === 1 || silentResetRef.current
+//           ? newItems
+//           : [...prev, ...newItems]
+//       );
+
+//       setHasMore(more);
+//       setPage((p) => p + 1);
+//     } catch (err) {
+//       if (err?.response?.status === 403) {
+//         setNotSubscribed(true);
+//         setHasMore(false);
+//         setSubscriptionReason(err.response?.data?.reason || "DEFAULT");
+//       }
+//     } finally {
+//       setIsFetching(false);
+
+//       if (!firstLoadDoneRef.current) {
+//         setInitialLoading(false);
+//         firstLoadDoneRef.current = true;
+//       }
+//     }
+//   }, [
+//     username,
+//     search,
+//     tags,
+//     page,
+//     hasMore,
+//     isFetching,
+//     LIMIT,
+//     notSubscribed,
+//     category,
+//   ]);
+
+//   /* ================= RESET ON FILTER CHANGE ================= */
+//   useEffect(() => {
+//     if (!username) return;
+
+//     silentResetRef.current = true;
+//     setPage(1);
+//     setHasMore(true);
+//     setNotSubscribed(false);
+//     setSubscriptionReason(null);
+//     firstLoadDoneRef.current = false;
+//   }, [username, search, tags, category]);
+
+//   /* ================= FIRST PAGE FETCH ================= */
+//   useEffect(() => {
+//     if (page === 1) {
+//       fetchPage();
+//     }
+//   }, [page, fetchPage]);
+
+//   return {
+//     menu,
+//     items,
+//     fetchPage,
+//     hasMore,
+//     initialLoading,
+//     isFetching,
+//     notSubscribed,
+//     subscriptionReason,
+//   };
+// }
+
+
+
+
+
+
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import api from "../lib/api";
 
@@ -374,7 +519,7 @@ export default function usePaginatedMenu(
   username,
   search,
   tags = [],
-  LIMIT = 4,
+  LIMIT = 15,
   category = null
 ) {
   const [menu, setMenu] = useState([]);
@@ -415,37 +560,36 @@ export default function usePaginatedMenu(
       const newMenu = res.data.menu || [];
       const more = Boolean(res.data.pagination?.hasMore);
 
-      /* ===== IMMUTABLE CATEGORY MERGE ===== */
+      /* ================= CATEGORY MERGE (ORDER SAFE) ================= */
       setMenu((prev) => {
         if (page === 1 || silentResetRef.current) {
           silentResetRef.current = false;
           return newMenu;
         }
 
-        const map = new Map();
+        const prevMap = new Map(prev.map((cat) => [cat.id, cat]));
 
-        [...prev, ...newMenu].forEach((cat) => {
-          const id = cat.id;
-          const existing = map.get(id);
+        for (const incomingCat of newMenu) {
+          if (!prevMap.has(incomingCat.id)) {
+            prevMap.set(incomingCat.id, incomingCat);
+          }
+        }
 
-          map.set(id, {
-            ...cat,
-            dishes: existing
-              ? [...existing.dishes, ...cat.dishes]
-              : [...cat.dishes],
-          });
-        });
-
-        return Array.from(map.values());
+        // 🔒 preserves original order forever
+        return Array.from(prevMap.values());
       });
 
-      const newItems = newMenu.flatMap((cat) => cat.dishes);
+      /* ================= FLATTEN DISHES (DEDUPED) ================= */
+      const newItems = newMenu.flatMap((cat) => cat.dishes || []);
 
-      setItems((prev) =>
-        page === 1 || silentResetRef.current
-          ? newItems
-          : [...prev, ...newItems]
-      );
+      setItems((prev) => {
+        if (page === 1 || silentResetRef.current) {
+          return newItems;
+        }
+
+        const seen = new Set(prev.map((i) => i._id));
+        return [...prev, ...newItems.filter((i) => !seen.has(i._id))];
+      });
 
       setHasMore(more);
       setPage((p) => p + 1);
@@ -480,6 +624,8 @@ export default function usePaginatedMenu(
     if (!username) return;
 
     silentResetRef.current = true;
+    setMenu([]);
+    setItems([]);
     setPage(1);
     setHasMore(true);
     setNotSubscribed(false);
@@ -488,11 +634,10 @@ export default function usePaginatedMenu(
   }, [username, search, tags, category]);
 
   /* ================= FIRST PAGE FETCH ================= */
-  useEffect(() => {
-    if (page === 1) {
-      fetchPage();
-    }
-  }, [page, fetchPage]);
+useEffect(() => {
+  fetchPage();
+}, [page, fetchPage]);
+
 
   return {
     menu,
@@ -505,3 +650,6 @@ export default function usePaginatedMenu(
     subscriptionReason,
   };
 }
+
+
+

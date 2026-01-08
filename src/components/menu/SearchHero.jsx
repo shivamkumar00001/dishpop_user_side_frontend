@@ -64,7 +64,6 @@ export default function SearchHero({
                 flex gap-3 pb-2
                 overflow-x-auto
                 overscroll-x-contain
-                touch-pan-x
                 snap-x snap-mandatory
                 scroll-smooth
               "
