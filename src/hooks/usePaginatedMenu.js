@@ -635,9 +635,9 @@ export default function usePaginatedMenu(
 
   /* ================= FIRST PAGE FETCH ================= */
   useEffect(() => {
-    if (page === 1) {
+    // if (page === 1) {
       fetchPage();
-    }
+    // }
   }, [page, fetchPage]);
 
   return {

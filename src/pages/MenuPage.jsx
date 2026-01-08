@@ -24,7 +24,7 @@ import { incrementARStat } from "../services/arStats.service";
 import CategorySection from "../components/menu/CategorySection.jsx";
 import SearchBar from "../components/menu/SearchBar.jsx";
 import MenuJump from "../components/menu/MenuJump.jsx";
-
+import Footer from "../components/menu/lower.jsx";
 const TAG_META = {
   "chef-special": { label: "Chef Special", icon: "👨‍🍳" },
   "most-loved": { label: "Most Loved", icon: "❤️" },
@@ -197,25 +197,28 @@ useEffect(() => {
 }, [username, debouncedSearch, selectedTags]);
 
 
+// const availableTags = useMemo(() => {
+//   const set = new Set();
+
+//   allItems.forEach((item) => {
+//     // tagDetails based tags
+//     if (Array.isArray(item.tags)) {
+//       item.tags.forEach((tag) => {
+//         if (tag?.key) set.add(tag.key);
+//       });
+//     }
+
+//     // optional: food type tags (only if you want them)
+//     // if (item.foodType === "veg") set.add("veg");
+//     // if (item.foodType === "non-veg") set.add("non-veg");
+//   });
+
+//   return [...set].filter((tag) => TAG_META[tag]);
+// }, [allItems]);
+
 const availableTags = useMemo(() => {
-  const set = new Set();
-
-  allItems.forEach((item) => {
-    // tagDetails based tags
-    if (Array.isArray(item.tags)) {
-      item.tags.forEach((tag) => {
-        if (tag?.key) set.add(tag.key);
-      });
-    }
-
-    // optional: food type tags (only if you want them)
-    // if (item.foodType === "veg") set.add("veg");
-    // if (item.foodType === "non-veg") set.add("non-veg");
-  });
-
-  return [...set].filter((tag) => TAG_META[tag]);
-}, [allItems]);
-
+  return Object.keys(TAG_META);
+}, []);
 
   // // Computed values
   // const visibleCategories = menu
@@ -412,6 +415,8 @@ return (
 
 
       <CartBar cart={cart} />
+            <Footer restaurantName={username} />
+
     </div>
   </>
 );
