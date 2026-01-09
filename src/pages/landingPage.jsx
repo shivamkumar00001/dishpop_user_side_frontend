@@ -597,6 +597,7 @@ import {
   Leaf,
   Star,
 } from "lucide-react";
+import HapticButton from "../components/HapticButton";
 
 import usePaginatedMenu from "../hooks/usePaginatedMenu";
 
@@ -702,19 +703,20 @@ export default function LandingPage() {
             {restaurantName}
           </span>
           <div className="flex gap-2 md:gap-3">
-            <button
+            <HapticButton
               onClick={goToReviews}
               className="bg-white/10 hover:bg-white/20 text-white px-3 md:px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1"
             >
               <Star className="w-4 h-4" />
               <span className="hidden sm:inline">Reviews</span>
-            </button>
-            <button
-              onClick={goToOrders}
-              className="bg-black text-white px-3 md:px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition-colors"
-            >
-              My Orders
-            </button>
+            </HapticButton>
+              <HapticButton
+                onClick={goToOrders}
+                className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold"
+              >
+                My Orders
+              </HapticButton>
+
           </div>
         </div>
       </header>
@@ -745,13 +747,13 @@ export default function LandingPage() {
             Enjoy delicious snacks, meals, and drinks delivered in minutes,
             prepared in a hygienic environment nearby.
           </p>
+            <HapticButton
+              onClick={goToMenu}
+              className="bg-white text-green-700 px-6 py-3 rounded-xl font-bold"
+            >
+              Explore Menu
+            </HapticButton>
 
-          <button
-            onClick={goToMenu}
-            className="bg-white text-green-700 px-6 py-3 rounded-xl font-bold"
-          >
-            Explore Menu
-          </button>
         </div>
       </section>
 
@@ -850,12 +852,12 @@ export default function LandingPage() {
 
       {/* ================= FLOATING MENU ================= */}
       {showFloatingMenu && (
-        <button
+        <HapticButton
           onClick={goToMenu}
           className="fixed bottom-5 right-5 bg-green-600 text-white px-6 py-3 rounded-2xl shadow-2xl font-bold z-50 hover:bg-green-700 transition-colors"
         >
           View Menu →
-        </button>
+        </HapticButton>
       )}
 
       {/* ================= FOOTER ================= */}
