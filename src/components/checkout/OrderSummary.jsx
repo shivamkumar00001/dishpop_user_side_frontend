@@ -127,22 +127,51 @@ export default function OrderSummary({
         Order Summary
       </h2>
 
-      {/* ITEMS */}
-      <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-        {cart.map((item) => (
-          <div
-            key={item.id}
-            className="flex justify-between items-center text-sm py-2 border-b border-gray-100 last:border-0"
-          >
-            <span className="text-gray-700 truncate font-medium">
-              {item.name} × {item.qty}
-            </span>
-            <span className="font-bold text-gray-900">
-              ₹{item.totalPrice}
-            </span>
-          </div>
-        ))}
+ {/* ITEMS */}
+<div className="space-y-4 max-h-64 overflow-y-auto pr-1">
+  {cart.map((item) => (
+    <div
+      key={item.id}
+      className="py-2 border-b border-gray-100 last:border-0"
+    >
+      {/* ITEM NAME */}
+      <div className="flex justify-between text-sm font-semibold text-gray-800">
+        <span>
+          {item.name} × {item.qty}
+        </span>
+        <span>₹{item.totalPrice}</span>
       </div>
+
+      {/* VARIANT */}
+      {item.variant?.name && (
+        <p className="text-xs text-gray-600 mt-0.5">
+          {item.variant.name}
+          {item.variant.price != null && (
+            <span className="ml-1 text-gray-500">
+              (₹{item.variant.price})
+            </span>
+          )}
+        </p>
+      )}
+
+      {/* ADDONS */}
+      {Array.isArray(item.addons) && item.addons.length > 0 && (
+        <div className="mt-1 space-y-0.5">
+          {item.addons.map((addon, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between text-xs text-gray-500"
+            >
+              <span>• {addon.name}</span>
+              <span>+₹{addon.price}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  ))}
+</div>
+
 
       {/* DIVIDER */}
       <div className="border-t-2 border-gray-200 pt-4 flex justify-between text-base font-bold">

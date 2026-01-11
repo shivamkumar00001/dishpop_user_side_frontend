@@ -280,7 +280,7 @@ export default function CheckoutPage() {
 
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  
   const [details, setDetails] = useState({
     name: "",
     phone: "",
@@ -328,16 +328,26 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const items = cart.map((item) => ({
-        itemId: item.itemId || item.id,
-        name: item.name,
-        imageUrl: item.imageUrl || "",
-        variant: item.variant,
-        addons: item.addons || [],
-        qty: Number(item.qty),
-        unitPrice: Number(item.totalPrice) / Number(item.qty),
-        totalPrice: Number(item.totalPrice),
-      }));
+const items = cart.map((item) => {
+  const addons =
+    Array.isArray(item.addons)
+      ? item.addons
+      : Array.isArray(item.addOns)
+      ? item.addOns
+      : [];
+
+  return {
+    itemId: item.itemId || item.id,
+    name: item.name,
+    imageUrl: item.imageUrl || "",
+    variant: item.variant,
+    addons, // ✅ correct
+    qty: Number(item.qty),
+    unitPrice: Number(item.unitPrice),
+    totalPrice: Number(item.totalPrice),
+  };
+});
+
 
       const res = await api.post(`/api/checkout/${username}`, {
         customerName: details.name,

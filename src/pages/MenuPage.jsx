@@ -357,31 +357,31 @@ return (
         </div>
       )}
 
-<div className="max-w-screen-xl mx-auto px-4">
-  {visibleCategories.map((category) => (
-    <div
-      key={category.categoryId || category.name}
-    ref={(el) => {
-      if (el) {
-        categoryRefs.current[category.name] = el;
-      }
-}}
+    <div className="max-w-screen-xl mx-auto px-4">
+      {visibleCategories.map((category) => (
+        <div
+          key={category.categoryId || category.name}
+        ref={(el) => {
+          if (el) {
+            categoryRefs.current[category.name] = el;
+          }
+    }}
 
-      className="scroll-mt-32"
-    >
-      <CategorySection
-        title={category.name}
-        items={category.dishes}
-        cart={cart}
-        addToCart={setSelectedItem}
-        openItemSheet={setSelectedItem}
-        increaseQty={increaseQty}
-        decreaseQty={decreaseQty}
-        onArView={handleArView}
-      />
+          className="scroll-mt-32"
+        >
+          <CategorySection
+            title={category.name}
+            items={category.dishes}
+            cart={cart}
+            addToCart={setSelectedItem}
+            openItemSheet={setSelectedItem}
+            increaseQty={increaseQty}
+            decreaseQty={decreaseQty}
+            onArView={handleArView}
+          />
+        </div>
+      ))}
     </div>
-  ))}
-</div>
 
       <div ref={loaderRef}>
         <InfiniteLoader hasMore={hasMore} isFetching={isFetching} />

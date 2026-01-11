@@ -75,6 +75,9 @@
 // //     </div>
 // //   );
 // // }
+
+
+
 // export default function CartItem({
 //   item,
 //   increaseQty,
@@ -165,18 +168,56 @@ export default function CartItem({
         }
       />
 
-      {/* INFO */}
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-gray-900 truncate">
-          {item.name}
-        </p>
-        <p className="text-xs text-gray-600 mt-1">
-          {item.quantityLabel || "Standard serving"}
-        </p>
-        <p className="text-sm font-bold text-green-600 mt-1">
-          ₹{item.totalPrice}
-        </p>
-      </div>
+{/* INFO */}
+<div className="flex-1 min-w-0">
+  {/* ITEM NAME */}
+  <p className="font-bold text-gray-900 truncate">
+    {item.name}
+  </p>
+
+  {/* VARIANT */}
+  {item.variant?.name && (
+    <p className="text-xs text-gray-600 mt-0.5">
+      {item.variant.name}
+      {item.variant.price != null && (
+        <span className="ml-1 text-gray-500">
+          (₹{item.variant.price})
+        </span>
+      )}
+    </p>
+  )}
+
+  {/* ADDONS */}
+  {Array.isArray(item.addons) && item.addons.length > 0 && (
+    <div className="mt-1 space-y-0.5">
+      <p className="text-[11px] font-semibold text-gray-500">
+        Add-ons:
+      </p>
+
+      {item.addons.map((addon, idx) => (
+        <div
+          key={idx}
+          className="flex justify-between text-xs text-gray-600"
+        >
+          <span>• {addon.name}</span>
+          <span className="text-gray-500">
+            +₹{addon.price}
+          </span>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* PRICE */}
+  <p className="text-sm font-bold text-green-600 mt-1">
+    ₹{item.totalPrice}
+    {item.qty > 1 && (
+      <span className="ml-1 text-xs text-gray-500 font-medium">
+        ({item.qty} × ₹{item.unitPrice})
+      </span>
+    )}
+  </p>
+</div>
 
       {/* CONTROLS */}
       <div className="flex items-center rounded-full border-2 border-gray-200 bg-white shadow-sm overflow-hidden">
