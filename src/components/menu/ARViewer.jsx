@@ -537,12 +537,11 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 rotation-per-second="20deg"
                 ar
                 ar-modes="webxr scene-viewer quick-look"
-                ar-scale="fixed"
+                ar-scale="auto"
                 scale="0.3 0.3 0.3"
                 ar-placement="floor"
                 camera-controls
                 touch-action="pan-y"
-                // disable-zoom
                 interaction-prompt="none"
                 camera-orbit="0deg 75deg 1.5m"
                 field-of-view="45deg"
