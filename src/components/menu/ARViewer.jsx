@@ -534,7 +534,8 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 alt={`3D model of ${item.name}`}
                 ar
                 ar-modes="webxr scene-viewer quick-look"
-                ar-scale="auto"
+                ar-scale="fixed"
+                scale="0.3 0.3 0.3"
                 ar-placement="floor"
                 camera-controls
                 touch-action="pan-y"
