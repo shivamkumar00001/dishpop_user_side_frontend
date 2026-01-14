@@ -542,7 +542,7 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 ar-placement="floor"
                 camera-controls
                 touch-action="pan-y"
-                disable-zoom
+                // disable-zoom
                 interaction-prompt="none"
                 camera-orbit="0deg 75deg 1.5m"
                 field-of-view="45deg"
