@@ -532,6 +532,9 @@ export default function ARViewer({ item, isOpen, onClose }) {
                 src={glbUrl}
                 ios-src={usdzUrl}
                 alt={`3D model of ${item.name}`}
+                auto-rotate
+                auto-rotate-delay="800"
+                rotation-per-second="20deg"
                 ar
                 ar-modes="webxr scene-viewer quick-look"
                 ar-scale="fixed"

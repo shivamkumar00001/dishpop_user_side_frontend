@@ -1,27 +1,28 @@
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-100">
-      <div className="max-w-4xl mx-auto px-4 py-3">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-          {/* Left - Brand */}
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center">
-              <div className="w-2 h-0.5 bg-white/90 rounded-full" />
-            </div>
-            <span className="text-sm font-semibold text-gray-800">DishPop</span>
-          </div>
+    <footer className="bg-white border-t border-green-100">
+      <div className="max-w-4xl mx-auto px-2 py-0">
+        <div className="flex items-baseline justify-between text-sm leading-[1]">
           
-          {/* Center - Links */}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <a href="#" className="hover:text-gray-800 transition-colors">AR Experience</a>
-            <div className="w-1 h-1 rounded-full bg-gray-300" />
-            <a href="#" className="hover:text-gray-800 transition-colors">Support</a>
+          {/* Brand */}
+          <div className="flex items-baseline gap-1">
+            <span className="inline-flex w-2.5 h-2.5 rounded-sm bg-green-600" />
+            <span className="font-semibold text-green-700">
+              DishPop
+            </span>
           </div>
-          
-          {/* Right - Copyright */}
-          <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} • All rights reserved
-          </p>
+
+          {/* Links */}
+          <div className="flex items-baseline gap-2 font-medium text-green-600">
+            <a href="#" className="hover:text-green-700">AR</a>
+            <span className="text-green-300">•</span>
+            <a href="#" className="hover:text-green-700">Support</a>
+          </div>
+
+          {/* Copyright */}
+          <span className="font-medium text-green-500">
+            © {new Date().getFullYear()}
+          </span>
         </div>
       </div>
     </footer>
