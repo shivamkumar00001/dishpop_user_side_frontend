@@ -1,223 +1,3 @@
-// // import { useEffect, useState, useCallback } from "react";
-// // import { useParams } from "react-router-dom";
-// // import { fetchOrders } from "../services/orderApi";
-// // import useLiveOrders from "../hooks/useLiveOrders";
-// // import OrderStatusCard from "../components/orders/OrderStatusCard";
-
-// // export default function OrderStatusPage() {
-// //   console.log("✅ OrderStatusPage rendered");
-
-// //   const { username } = useParams();
-// //   console.log("👤 username from route:", username);
-
-// //   const [orders, setOrders] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-
-// //   const loadOrders = useCallback(async () => {
-// //     if (!username) return;
-
-// //     try {
-// //       const res = await fetchOrders(username);
-// //       const data = Array.isArray(res.data?.data) ? res.data.data : [];
-      
-// //       // Sort by creation date (oldest first)
-// //       data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-// //       setOrders(data);
-// //     } catch (err) {
-// //       console.error("Failed to load orders", err);
-// //     } finally {
-// //       setLoading(false);
-// //     }
-// //   }, [username]);
-
-// //   useEffect(() => {
-// //     loadOrders();
-// //   }, [loadOrders]);
-
-// //   const handleOrderEvent = useCallback((type, order) => {
-// //     console.log("🔄 Handling order event:", type, order);
-    
-// //     setOrders((prev) => {
-// //       let updated = [...prev];
-
-// //       if (type === "created") {
-// //         // Add new order
-// //         updated = [...updated, order];
-// //       } else if (type === "updated" || type === "replaced") {
-// //         // Update existing order
-// //         updated = updated.map((o) =>
-// //           o._id === order._id ? { ...o, ...order } : o
-// //         );
-// //       } else if (type === "deleted") {
-// //         // Remove order (handle both string and object)
-// //         const orderId = typeof order === "string" ? order : order._id;
-// //         updated = updated.filter((o) => o._id !== orderId);
-// //       }
-
-// //       // Keep sorted by creation date
-// //       updated.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-      
-// //       return updated;
-// //     });
-// //   }, []);
-
-// //   useLiveOrders(username, handleOrderEvent);
-
-// //   if (loading) {
-// //     return (
-// //       <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
-// //         Loading order status…
-// //       </div>
-// //     );
-// //   }
-
-// //   if (orders.length === 0) {
-// //     return (
-// //       <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
-// //         <div className="text-center">
-// //           <p className="text-xl mb-2">No orders yet</p>
-// //           <p className="text-sm">Your orders will appear here</p>
-// //         </div>
-// //       </div>
-// //     );
-// //   }
-
-// //   return (
-// //     <div className="min-h-screen bg-black text-white p-4">
-// //       <h1 className="text-xl font-bold text-center mb-4">
-// //         Order Status - {username}
-// //       </h1>
-
-// //       <div className="max-w-xl mx-auto space-y-4">
-// //         {orders.map((order) => (
-// //           <OrderStatusCard key={order._id} order={order} />
-// //         ))}
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-
-// // import { useEffect, useState, useCallback, useRef } from "react";
-// // import { useParams } from "react-router-dom";
-// // import { fetchOrders } from "../services/orderApi";
-// // import useLiveOrders from "../hooks/useLiveOrders";
-// // import OrderStatusCard from "../components/orders/OrderStatusCard";
-
-// // export default function OrderStatusPage() {
-// //   console.log("✅ OrderStatusPage rendered");
-
-// //   const { username } = useParams();
-// //   console.log("👤 username from route:", username);
-
-// //   const [orders, setOrders] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-
-// //   // Track if this is the initial load
-// //   const isInitialLoadRef = useRef(true);
-
-// //   // ===============================
-// //   // INITIAL LOAD
-// //   // ===============================
-// //   const loadOrders = useCallback(async () => {
-// //     if (!username) return;
-
-// //     try {
-// //       const res = await fetchOrders(username);
-// //       const data = Array.isArray(res.data?.data) ? res.data.data : [];
-
-// //       // Oldest → newest (order sequence)
-// //       data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-// //       setOrders(data);
-// //     } catch (err) {
-// //       console.error("Failed to load orders", err);
-// //     } finally {
-// //       setLoading(false);
-// //       // Mark initial load as complete
-// //       isInitialLoadRef.current = false;
-// //     }
-// //   }, [username]);
-
-// //   useEffect(() => {
-// //     loadOrders();
-// //   }, [loadOrders]);
-
-// //   // ===============================
-// //   // LIVE SOCKET EVENTS
-// //   // ===============================
-// //   const handleOrderEvent = useCallback((type, order) => {
-// //     console.log("🔄 Handling order event:", type, order);
-
-// //     setOrders((prev) => {
-// //       let updated = [...prev];
-
-// //       if (type === "created") {
-// //         updated.push(order);
-// //       } 
-// //       else if (type === "updated" || type === "replaced") {
-// //         updated = updated.map((o) =>
-// //           o._id === order._id ? { ...o, ...order } : o
-// //         );
-// //       } 
-// //       else if (type === "deleted") {
-// //         const orderId = typeof order === "string" ? order : order._id;
-// //         updated = updated.filter((o) => o._id !== orderId);
-// //       }
-
-// //       // Maintain order numbering
-// //       updated.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-// //       return updated;
-// //     });
-// //   }, []);
-
-// //   useLiveOrders(username, handleOrderEvent);
-
-// //   // ===============================
-// //   // UI STATES
-// //   // ===============================
-// //   if (loading) {
-// //     return (
-// //       <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
-// //         Loading order status…
-// //       </div>
-// //     );
-// //   }
-
-// //   if (orders.length === 0) {
-// //     return (
-// //       <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
-// //         <div className="text-center">
-// //           <p className="text-xl mb-2">No orders yet</p>
-// //           <p className="text-sm">Your orders will appear here</p>
-// //         </div>
-// //       </div>
-// //     );
-// //   }
-
-// //   // ===============================
-// //   // MAIN RENDER
-// //   // ===============================
-// //   return (
-// //     <div className="min-h-screen bg-black text-white p-4">
-// //       <h1 className="text-xl font-bold text-center mb-4">
-// //         Order Status - {username}
-// //       </h1>
-
-// //       <div className="max-w-xl mx-auto space-y-4">
-// //         {orders.map((order, index) => (
-// //           <OrderStatusCard
-// //             key={order._id}
-// //             order={order}
-// //             orderNumber={index + 1}
-// //           />
-// //         ))}
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-
-// // src/pages/OrderStatusPage.jsx
 // import { useEffect, useState, useCallback } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
 // import { fetchOrders } from "../services/orderApi";
@@ -233,6 +13,29 @@
 //   const [loading, setLoading] = useState(true);
 
 //   // ===============================
+//   // SORT ORDERS BY PRIORITY
+//   // ===============================
+//   const sortOrdersByPriority = (orders) => {
+//     const statusPriority = {
+//       confirmed: 1,  // Preparing (highest priority)
+//       pending: 2,    // Order Received
+//       completed: 3,  // Prepared
+//       cancelled: 4   // Cancelled (lowest priority)
+//     };
+
+//     return orders.sort((a, b) => {
+//       const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
+      
+//       // If same status, sort by creation time (oldest first)
+//       if (priorityDiff === 0) {
+//         return new Date(a.createdAt) - new Date(b.createdAt);
+//       }
+      
+//       return priorityDiff;
+//     });
+//   };
+
+//   // ===============================
 //   // INITIAL LOAD
 //   // ===============================
 //   const loadOrders = useCallback(async () => {
@@ -241,8 +44,8 @@
 //     try {
 //       const res = await fetchOrders(username);
 //       const data = Array.isArray(res.data?.data) ? res.data.data : [];
-//       data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-//       setOrders(data);
+//       const sortedData = sortOrdersByPriority(data);
+//       setOrders(sortedData);
 //     } catch (err) {
 //       console.error("❌ Failed to load orders:", err);
 //     } finally {
@@ -272,8 +75,8 @@
 //         updated = updated.filter((o) => o._id !== orderId);
 //       }
 
-//       updated.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-//       return updated;
+//       // Sort by priority after any change
+//       return sortOrdersByPriority(updated);
 //     });
 //   }, []);
 
@@ -364,66 +167,74 @@
 //             ) : (
 //               // ORDER CARDS
 //               <div className="space-y-6">
-//                 {orders.map((order, index) => (
-//                   <div
-//                     key={order._id}
-//                     className="rounded-3xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden relative"
-//                   >
-//                     {/* ORDER NUMBER BADGE */}
-//                     <div className="absolute -top-3 -left-3 bg-green-600 text-white font-bold text-base w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10">
-//                       #{index + 1}
-//                     </div>
+//                 {orders.map((order, index) => {
+//                   // Calculate sequential order number based on creation time
+//                   const allOrdersSorted = [...orders].sort(
+//                     (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+//                   );
+//                   const sequentialNumber = allOrdersSorted.findIndex(o => o._id === order._id) + 1;
 
-//                     {/* ORDER HEADER */}
-//                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
-//                       <div className="flex justify-between items-start">
-//                         <div>
-//                           <div className="flex items-center gap-2 mb-1">
-//                             <span className="text-2xl">🍽️</span>
-//                             <h2 className="text-xl font-bold text-gray-900">
-//                               Order #{order._id.slice(-6)}
-//                             </h2>
+//                   return (
+//                     <div
+//                       key={order._id}
+//                       className="rounded-3xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden relative"
+//                     >
+//                       {/* ORDER NUMBER BADGE */}
+//                       <div className="absolute -top-3 -left-3 bg-green-600 text-white font-bold text-base w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10">
+//                         #{sequentialNumber}
+//                       </div>
+
+//                       {/* ORDER HEADER */}
+//                       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+//                         <div className="flex justify-between items-start">
+//                           <div>
+//                             <div className="flex items-center gap-2 mb-1">
+//                               <span className="text-2xl">🍽️</span>
+//                               <h2 className="text-xl font-bold text-gray-900">
+//                                 Order #{order._id.slice(-6)}
+//                               </h2>
+//                             </div>
+//                             <p className="text-sm text-gray-600">
+//                               Table {order.tableNumber} • {order.items.length}{" "}
+//                               {order.items.length === 1 ? "item" : "items"}
+//                             </p>
 //                           </div>
+
+//                           {/* STATUS BADGE */}
+//                           <span
+//                             className={`rounded-full px-4 py-1.5 text-xs font-bold ${
+//                               order.status === "pending"
+//                                 ? "bg-yellow-100 text-yellow-700"
+//                                 : order.status === "confirmed"
+//                                 ? "bg-cyan-100 text-cyan-700"
+//                                 : order.status === "completed"
+//                                 ? "bg-green-100 text-green-700"
+//                                 : "bg-red-100 text-red-700"
+//                             }`}
+//                           >
+//                             {order.status.toUpperCase()}
+//                           </span>
+//                         </div>
+//                       </div>
+
+//                       <div className="p-6">
+//                         {/* STATUS DISPLAY */}
+//                         <OrderStatusCard order={order} orderNumber={sequentialNumber} />
+
+//                         {/* ORDER TIME */}
+//                         <div className="mt-4 pt-4 border-t border-gray-200">
 //                           <p className="text-sm text-gray-600">
-//                             Table {order.tableNumber} • {order.items.length}{" "}
-//                             {order.items.length === 1 ? "item" : "items"}
+//                             <span className="font-semibold">Placed at:</span>{" "}
+//                             {new Date(order.createdAt).toLocaleString("en-US", {
+//                               dateStyle: "medium",
+//                               timeStyle: "short",
+//                             })}
 //                           </p>
 //                         </div>
-
-//                         {/* STATUS BADGE */}
-//                         <span
-//                           className={`rounded-full px-4 py-1.5 text-xs font-bold ${
-//                             order.status === "pending"
-//                               ? "bg-yellow-100 text-yellow-700"
-//                               : order.status === "confirmed"
-//                               ? "bg-cyan-100 text-cyan-700"
-//                               : order.status === "completed"
-//                               ? "bg-green-100 text-green-700"
-//                               : "bg-red-100 text-red-700"
-//                           }`}
-//                         >
-//                           {order.status.toUpperCase()}
-//                         </span>
 //                       </div>
 //                     </div>
-
-//                     <div className="p-6">
-//                       {/* STATUS DISPLAY */}
-//                       <OrderStatusCard order={order} orderNumber={index + 1} />
-
-//                       {/* ORDER TIME */}
-//                       <div className="mt-4 pt-4 border-t border-gray-200">
-//                         <p className="text-sm text-gray-600">
-//                           <span className="font-semibold">Placed at:</span>{" "}
-//                           {new Date(order.createdAt).toLocaleString("en-US", {
-//                             dateStyle: "medium",
-//                             timeStyle: "short",
-//                           })}
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 ))}
+//                   );
+//                 })}
 //               </div>
 //             )}
 
@@ -454,13 +265,13 @@
 //     </div>
 //   );
 // }
-// src/pages/OrderStatusPage.jsx
-import { useEffect, useState, useCallback } from "react";
+
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchOrders } from "../services/orderApi";
 import useLiveOrders from "../hooks/useLiveOrders";
 import OrderStatusCard from "../components/orders/OrderStatusCard";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 
 export default function OrderStatusPage() {
   const { username } = useParams();
@@ -468,11 +279,28 @@ export default function OrderStatusPage() {
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentTableNumber, setCurrentTableNumber] = useState(null);
+
+  // ===============================
+  // GET CURRENT USER'S TABLE NUMBER
+  // ===============================
+  useEffect(() => {
+    const tableKey = `table_${username}`;
+    const storedTableNumber = localStorage.getItem(tableKey);
+    
+    if (storedTableNumber) {
+      const tableNum = Number(storedTableNumber);
+      console.log(`✅ Retrieved table number: ${tableNum} from key: ${tableKey}`);
+      setCurrentTableNumber(tableNum);
+    } else {
+      console.log(`⚠️ No table number found for key: ${tableKey}`);
+    }
+  }, [username]);
 
   // ===============================
   // SORT ORDERS BY PRIORITY
   // ===============================
-  const sortOrdersByPriority = (orders) => {
+  const sortOrdersByPriority = useCallback((orders) => {
     const statusPriority = {
       confirmed: 1,  // Preparing (highest priority)
       pending: 2,    // Order Received
@@ -490,7 +318,32 @@ export default function OrderStatusPage() {
       
       return priorityDiff;
     });
-  };
+  }, []);
+
+  // ===============================
+  // SEPARATE ORDERS BY TABLE
+  // ===============================
+  const { myOrders, otherOrders } = useMemo(() => {
+    if (currentTableNumber === null) {
+      return { myOrders: [], otherOrders: sortOrdersByPriority([...orders]) };
+    }
+
+    const my = [];
+    const others = [];
+
+    orders.forEach(order => {
+      if (Number(order.tableNumber) === currentTableNumber) {
+        my.push(order);
+      } else {
+        others.push(order);
+      }
+    });
+
+    return {
+      myOrders: sortOrdersByPriority(my),
+      otherOrders: sortOrdersByPriority(others)
+    };
+  }, [orders, currentTableNumber, sortOrdersByPriority]);
 
   // ===============================
   // INITIAL LOAD
@@ -501,8 +354,7 @@ export default function OrderStatusPage() {
     try {
       const res = await fetchOrders(username);
       const data = Array.isArray(res.data?.data) ? res.data.data : [];
-      const sortedData = sortOrdersByPriority(data);
-      setOrders(sortedData);
+      setOrders(data);
     } catch (err) {
       console.error("❌ Failed to load orders:", err);
     } finally {
@@ -532,12 +384,91 @@ export default function OrderStatusPage() {
         updated = updated.filter((o) => o._id !== orderId);
       }
 
-      // Sort by priority after any change
-      return sortOrdersByPriority(updated);
+      return updated;
     });
   }, []);
 
   useLiveOrders(username, handleOrderEvent);
+
+  // ===============================
+  // RENDER ORDER CARD
+  // ===============================
+  const renderOrderCard = (order, sequentialNumber, isMyOrder = false) => (
+    <div
+      key={order._id}
+      className={`rounded-3xl bg-white border-2 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden relative ${
+        isMyOrder ? 'border-green-500' : 'border-gray-200'
+      }`}
+    >
+      {/* ORDER NUMBER BADGE */}
+      <div className={`absolute -top-3 -left-3 font-bold text-base w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10 ${
+        isMyOrder ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'
+      }`}>
+        #{sequentialNumber}
+      </div>
+
+      {/* MY ORDER INDICATOR */}
+      {isMyOrder && (
+        <div className="absolute -top-3 -right-3 bg-green-600 text-white font-bold text-xs px-3 py-1.5 rounded-full shadow-lg border-4 border-white z-10 flex items-center gap-1">
+          <User className="w-3 h-3" />
+          YOUR ORDER
+        </div>
+      )}
+
+      {/* ORDER HEADER */}
+      <div className={`px-6 py-5 border-b-2 ${
+        isMyOrder 
+          ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200' 
+          : 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200'
+      }`}>
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-2xl">🍽️</span>
+              <h2 className="text-xl font-bold text-gray-900">
+                Order #{order._id.slice(-6)}
+              </h2>
+            </div>
+            <p className="text-sm text-gray-600">
+              Table {order.tableNumber} • {order.items.length}{" "}
+              {order.items.length === 1 ? "item" : "items"}
+            </p>
+          </div>
+
+          {/* STATUS BADGE */}
+          <span
+            className={`rounded-full px-4 py-1.5 text-xs font-bold ${
+              order.status === "pending"
+                ? "bg-yellow-100 text-yellow-700"
+                : order.status === "confirmed"
+                ? "bg-cyan-100 text-cyan-700"
+                : order.status === "completed"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {order.status.toUpperCase()}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-6">
+        {/* STATUS DISPLAY */}
+        <OrderStatusCard order={order} orderNumber={sequentialNumber} />
+
+        {/* ORDER TIME */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold">Placed at:</span>{" "}
+            {new Date(order.createdAt).toLocaleString("en-US", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 
   // ===============================
   // LOADING STATE
@@ -580,8 +511,8 @@ export default function OrderStatusPage() {
           </div>
 
           <p className="text-white/90 text-base md:text-lg">
-            Track your orders in real-time • {orders.length} active{" "}
-            {orders.length === 1 ? "order" : "orders"}
+            Track your orders in real-time
+            {currentTableNumber && ` • Your Table: ${currentTableNumber}`}
           </p>
         </div>
       </section>
@@ -622,76 +553,60 @@ export default function OrderStatusPage() {
                 </button>
               </div>
             ) : (
-              // ORDER CARDS
-              <div className="space-y-6">
-                {orders.map((order, index) => {
-                  // Calculate sequential order number based on creation time
-                  const allOrdersSorted = [...orders].sort(
-                    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-                  );
-                  const sequentialNumber = allOrdersSorted.findIndex(o => o._id === order._id) + 1;
-
-                  return (
-                    <div
-                      key={order._id}
-                      className="rounded-3xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden relative"
-                    >
-                      {/* ORDER NUMBER BADGE */}
-                      <div className="absolute -top-3 -left-3 bg-green-600 text-white font-bold text-base w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10">
-                        #{sequentialNumber}
+              <div className="space-y-8">
+                {/* MY ORDERS SECTION */}
+                {myOrders.length > 0 && (
+                  <div>
+                    <div className="mb-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <User className="w-6 h-6 text-green-600" />
+                        <h2 className="text-2xl font-bold text-gray-900">
+                          Your Orders (Table {currentTableNumber})
+                        </h2>
                       </div>
-
-                      {/* ORDER HEADER */}
-                      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-2xl">🍽️</span>
-                              <h2 className="text-xl font-bold text-gray-900">
-                                Order #{order._id.slice(-6)}
-                              </h2>
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              Table {order.tableNumber} • {order.items.length}{" "}
-                              {order.items.length === 1 ? "item" : "items"}
-                            </p>
-                          </div>
-
-                          {/* STATUS BADGE */}
-                          <span
-                            className={`rounded-full px-4 py-1.5 text-xs font-bold ${
-                              order.status === "pending"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : order.status === "confirmed"
-                                ? "bg-cyan-100 text-cyan-700"
-                                : order.status === "completed"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {order.status.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-6">
-                        {/* STATUS DISPLAY */}
-                        <OrderStatusCard order={order} orderNumber={sequentialNumber} />
-
-                        {/* ORDER TIME */}
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-semibold">Placed at:</span>{" "}
-                            {new Date(order.createdAt).toLocaleString("en-US", {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            })}
-                          </p>
-                        </div>
-                      </div>
+                      <p className="text-gray-600 text-sm">
+                        {myOrders.length} {myOrders.length === 1 ? 'order' : 'orders'} from your table
+                      </p>
                     </div>
-                  );
-                })}
+                    <div className="space-y-6">
+                      {myOrders.map((order) => {
+                        const allOrdersSorted = [...orders].sort(
+                          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+                        );
+                        const sequentialNumber = allOrdersSorted.findIndex(o => o._id === order._id) + 1;
+                        return renderOrderCard(order, sequentialNumber, true);
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* OTHER ORDERS SECTION */}
+                {otherOrders.length > 0 && (
+                  <div>
+                    {myOrders.length > 0 && (
+                      <div className="mb-6">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">🍽️</span>
+                          <h2 className="text-2xl font-bold text-gray-900">
+                            Other Tables
+                          </h2>
+                        </div>
+                        <p className="text-gray-600 text-sm">
+                          {otherOrders.length} {otherOrders.length === 1 ? 'order' : 'orders'} from other tables
+                        </p>
+                      </div>
+                    )}
+                    <div className="space-y-6">
+                      {otherOrders.map((order) => {
+                        const allOrdersSorted = [...orders].sort(
+                          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+                        );
+                        const sequentialNumber = allOrdersSorted.findIndex(o => o._id === order._id) + 1;
+                        return renderOrderCard(order, sequentialNumber, false);
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
