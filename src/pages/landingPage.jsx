@@ -434,6 +434,9 @@ export default function LandingPage() {
 
   /* ================= NAVIGATION ================= */
   const goToMenu = () => navigate(`/menu/${restaurantId}`);
+  const handleOrderStatusClick = () => {
+  navigate(`/${restaurantId}/order-status`);
+};
   const goToOrders = () => navigate(`/orders/${restaurantId}`);
   const goToReviews = () => navigate(`/reviews/${restaurantId}`);
 
@@ -460,17 +463,19 @@ export default function LandingPage() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 md:gap-3">
-            <button
-              className={`p-2 rounded-full transition-colors ${
-                showNavbar ? "hover:bg-gray-100" : "hover:bg-white/10"
-              }`}
-            >
-              <Bell
-                className={`w-5 h-5 ${
-                  showNavbar ? "text-gray-900" : "text-white"
-                }`}
-              />
-            </button>
+     <button
+  onClick={handleOrderStatusClick}
+  className={`p-2 rounded-full transition-colors ${
+    showNavbar ? "hover:bg-gray-100" : "hover:bg-white/10"
+  }`}
+>
+  <Bell
+    className={`w-5 h-5 ${
+      showNavbar ? "text-gray-900" : "text-white"
+    }`}
+  />
+</button>
+
 
             <HapticButton
               onClick={goToOrders}
