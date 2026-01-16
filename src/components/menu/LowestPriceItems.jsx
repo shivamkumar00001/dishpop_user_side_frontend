@@ -32,7 +32,9 @@ export default function LowestPriceItems({ items, onAdd }) {
             "
           >
             {/* IMAGE */}
-            <div className="relative rounded-lg overflow-hidden mb-2">
+            <div className="relative rounded-lg overflow-hidden mb-2"
+                onClick={() => onAdd(item)}
+            >
               <img
                 src={item.imageUrl}
                 alt={item.name}
