@@ -49,7 +49,9 @@ const cartItem = Array.isArray(cart)
   return (
     <div className="flex flex-col gap-2">
       {/* IMAGE */}
-      <div className="relative rounded-2xl overflow-hidden">
+      <div className="relative rounded-2xl overflow-hidden"
+          onClick={openItemSheet || addToCart}
+      >
         <img
           src={item.imageUrl || item.thumbnailUrl}
           alt={item.name}
