@@ -495,7 +495,7 @@ export default function LandingPage() {
             }}
           />
           {/* Gradient Overlay - Lighter at top for mobile */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30 sm:to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/20 sm:to-transparent"></div>
         </div>
 
         {/* Hero Content */}
