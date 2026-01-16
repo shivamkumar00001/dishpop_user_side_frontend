@@ -323,8 +323,8 @@ export default function LandingPage() {
   const { id } = useParams();
   const restaurantId = id || "demo";
 
-  // const API_BASE_URL = "https://dishpop-restro-side-backend.onrender.com";
-  const API_BASE_URL = "http://localhost:5001";
+  const API_BASE_URL = "https://dishpop-restro-side-backend.onrender.com";
+  // const API_BASE_URL = "http://localhost:5001";
 
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantData, setRestaurantData] = useState(null);
