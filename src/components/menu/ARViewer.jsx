@@ -787,14 +787,14 @@ export default function ARViewer({ item, isOpen, onClose }) {
         </div>
 
         {/* Menu Button (3 dots) */}
-        <button
+        {/* <button
           className="p-2 rounded-full hover:bg-[#2a2a2a] active:scale-95 transition text-white"
           aria-label="Menu"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
           </svg>
-        </button>
+        </button> */}
       </div>
 
       {hasAR ? (
