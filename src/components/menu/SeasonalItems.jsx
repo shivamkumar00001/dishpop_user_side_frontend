@@ -57,7 +57,7 @@ export default function SeasonalItems({ items, onAdd }) {
                   rounded-xl
                   overflow-hidden
                   shadow-md
-                  cursor-pointer
+                  cursor-pointer  
 
                   w-[135px]
                   sm:w-[150px]
