@@ -467,7 +467,7 @@ export default function LandingPage() {
               onClick={handleOrderStatusClick}
               className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap"
             >
-             View status
+             Order status
             </HapticButton>
           </div>
         </div>
