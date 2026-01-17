@@ -87,7 +87,7 @@ export default function Greet() {
           Order More Items
         </button>
         
-        <button
+        {/* <button
           onClick={() => navigate(`/orders/${params.id}`)}
           className="bg-white hover:bg-gray-50 border-2 border-gray-300
                      text-gray-700 px-8 py-4 rounded-xl 
@@ -95,7 +95,7 @@ export default function Greet() {
                      active:scale-95 transition-all duration-200"
         >
           View My Orders
-        </button>
+        </button> */}
 
         <button
           onClick={() => navigate(`/${params.id}/order-status`)}
