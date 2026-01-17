@@ -463,25 +463,11 @@ export default function LandingPage() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 md:gap-3">
-     <button
-  onClick={handleOrderStatusClick}
-  className={`p-2 rounded-full transition-colors ${
-    showNavbar ? "hover:bg-gray-100" : "hover:bg-white/10"
-  }`}
->
-  <Bell
-    className={`w-5 h-5 ${
-      showNavbar ? "text-gray-900" : "text-white"
-    }`}
-  />
-</button>
-
-
             <HapticButton
-              onClick={goToOrders}
+              onClick={handleOrderStatusClick}
               className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap"
             >
-              My Order
+             View status
             </HapticButton>
           </div>
         </div>
