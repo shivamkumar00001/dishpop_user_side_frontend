@@ -248,11 +248,6 @@
 
 
 
-
-
-
-
-// components/checkout/CustomerDetails.jsx
 export default function CustomerDetails({ details, onChange, orderType }) {
   return (
     <div className="bg-white rounded-3xl border border-gray-200 shadow-lg hover:shadow-xl transition-all p-6">
@@ -322,8 +317,8 @@ export default function CustomerDetails({ details, onChange, orderType }) {
                 Delivery Address *
               </label>
               <textarea
-                name="address"
-                value={details.address}
+                name="line1"
+                value={details.line1}
                 onChange={onChange}
                 rows={3}
                 placeholder="House no, Street, Area, Landmark"
@@ -344,6 +339,23 @@ export default function CustomerDetails({ details, onChange, orderType }) {
                 value={details.city}
                 onChange={onChange}
                 placeholder="Enter city"
+                className="w-full rounded-xl border-2 border-gray-300 
+                           px-4 py-3 text-sm
+                           focus:ring-2 focus:ring-emerald-500 
+                           focus:border-emerald-500 outline-none
+                           hover:border-gray-400 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                State *
+              </label>
+              <input
+                name="state"
+                value={details.state}
+                onChange={onChange}
+                placeholder="Enter state"
                 className="w-full rounded-xl border-2 border-gray-300 
                            px-4 py-3 text-sm
                            focus:ring-2 focus:ring-emerald-500 
