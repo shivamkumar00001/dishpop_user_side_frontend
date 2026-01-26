@@ -180,38 +180,198 @@
 //     </div>
 //   );
 // }
-export default function CustomerDetails({ details, onChange }) {
+
+
+
+
+
+
+
+
+
+
+
+
+// export default function CustomerDetails({ details, onChange }) {
+//   return (
+//     <div className="bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow p-6">
+//       <h2 className="text-lg font-bold text-gray-900 mb-5">
+//         Customer & Table Details
+//       </h2>
+
+//       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+//         {[
+//           { label: "Customer Name *", name: "name" },
+//           { label: "Phone Number", name: "phone" },
+//           { label: "Table Number *", name: "tableNumber" },
+//         ].map((f) => (
+//           <div key={f.name}>
+//             <label className="block text-sm font-semibold text-gray-700 mb-2">
+//               {f.label}
+//             </label>
+//             <input
+//               name={f.name}
+//               value={details[f.name]}
+//               onChange={onChange}
+//               className="w-full rounded-xl border-2 border-gray-300 
+//                          px-4 py-3 text-sm
+//                          focus:ring-2 focus:ring-green-500 
+//                          focus:border-green-500 outline-none
+//                          hover:border-gray-400 transition-colors"
+//             />
+//           </div>
+//         ))}
+//       </div>
+
+//       {/* DESCRIPTION */}
+//       <div className="mt-5">
+//         <label className="block text-sm font-semibold text-gray-700 mb-2">
+//           Order Notes (optional)
+//         </label>
+//         <textarea
+//           name="description"
+//           value={details.description}
+//           onChange={onChange}
+//           rows={3}
+//           placeholder="Any special instructions? (less spicy, no onions, etc.)"
+//           className="w-full rounded-xl border-2 border-gray-300
+//                      px-4 py-3 text-sm resize-none
+//                      focus:ring-2 focus:ring-green-500
+//                      focus:border-green-500 outline-none
+//                      hover:border-gray-400 transition-colors"
+//         />
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+// components/checkout/CustomerDetails.jsx
+export default function CustomerDetails({ details, onChange, orderType }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow p-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-5">
-        Customer & Table Details
+    <div className="bg-white rounded-3xl border border-gray-200 shadow-lg hover:shadow-xl transition-all p-6">
+      <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+        <span className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-700 font-bold">2</span>
+        {orderType === "ONLINE" ? "Delivery Details" : "Customer Details"}
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {[
-          { label: "Customer Name *", name: "name" },
-          { label: "Phone Number", name: "phone" },
-          { label: "Table Number *", name: "tableNumber" },
-        ].map((f) => (
-          <div key={f.name}>
+        <div className={orderType === "DINE_IN" ? "" : "sm:col-span-2"}>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Customer Name *
+          </label>
+          <input
+            name="name"
+            value={details.name}
+            onChange={onChange}
+            placeholder="Enter your name"
+            className="w-full rounded-xl border-2 border-gray-300 
+                       px-4 py-3 text-sm
+                       focus:ring-2 focus:ring-emerald-500 
+                       focus:border-emerald-500 outline-none
+                       hover:border-gray-400 transition-colors"
+          />
+        </div>
+
+        <div className={orderType === "DINE_IN" ? "" : "sm:col-span-2"}>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Phone Number
+          </label>
+          <input
+            name="phone"
+            value={details.phone}
+            onChange={onChange}
+            placeholder="Enter phone number"
+            className="w-full rounded-xl border-2 border-gray-300 
+                       px-4 py-3 text-sm
+                       focus:ring-2 focus:ring-emerald-500 
+                       focus:border-emerald-500 outline-none
+                       hover:border-gray-400 transition-colors"
+          />
+        </div>
+
+        {orderType === "DINE_IN" && (
+          <div className="sm:col-span-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {f.label}
+              Table Number *
             </label>
             <input
-              name={f.name}
-              value={details[f.name]}
+              name="tableNumber"
+              value={details.tableNumber}
               onChange={onChange}
+              placeholder="Enter table number"
               className="w-full rounded-xl border-2 border-gray-300 
                          px-4 py-3 text-sm
-                         focus:ring-2 focus:ring-green-500 
-                         focus:border-green-500 outline-none
+                         focus:ring-2 focus:ring-emerald-500 
+                         focus:border-emerald-500 outline-none
                          hover:border-gray-400 transition-colors"
             />
           </div>
-        ))}
+        )}
+
+        {orderType === "ONLINE" && (
+          <>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Delivery Address *
+              </label>
+              <textarea
+                name="address"
+                value={details.address}
+                onChange={onChange}
+                rows={3}
+                placeholder="House no, Street, Area, Landmark"
+                className="w-full rounded-xl border-2 border-gray-300
+                           px-4 py-3 text-sm resize-none
+                           focus:ring-2 focus:ring-emerald-500
+                           focus:border-emerald-500 outline-none
+                           hover:border-gray-400 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                City *
+              </label>
+              <input
+                name="city"
+                value={details.city}
+                onChange={onChange}
+                placeholder="Enter city"
+                className="w-full rounded-xl border-2 border-gray-300 
+                           px-4 py-3 text-sm
+                           focus:ring-2 focus:ring-emerald-500 
+                           focus:border-emerald-500 outline-none
+                           hover:border-gray-400 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Pincode *
+              </label>
+              <input
+                name="pincode"
+                value={details.pincode}
+                onChange={onChange}
+                placeholder="Enter pincode"
+                className="w-full rounded-xl border-2 border-gray-300 
+                           px-4 py-3 text-sm
+                           focus:ring-2 focus:ring-emerald-500 
+                           focus:border-emerald-500 outline-none
+                           hover:border-gray-400 transition-colors"
+              />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* DESCRIPTION */}
       <div className="mt-5">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           Order Notes (optional)
@@ -224,8 +384,8 @@ export default function CustomerDetails({ details, onChange }) {
           placeholder="Any special instructions? (less spicy, no onions, etc.)"
           className="w-full rounded-xl border-2 border-gray-300
                      px-4 py-3 text-sm resize-none
-                     focus:ring-2 focus:ring-green-500
-                     focus:border-green-500 outline-none
+                     focus:ring-2 focus:ring-emerald-500
+                     focus:border-emerald-500 outline-none
                      hover:border-gray-400 transition-colors"
         />
       </div>
