@@ -659,6 +659,10 @@ export default function OrderStatusPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentTableNumber, setCurrentTableNumber] = useState(null);
+  
+  useEffect(() => {
+  console.log("🔥 Orders from API:", orders);
+}, [orders]);
 
   // ===============================
   // GET CURRENT USER'S TABLE NUMBER
@@ -689,15 +693,42 @@ export default function OrderStatusPage() {
   // ===============================
   // GET ONLY USER'S ORDERS
   // ===============================
-  const myOrders = useMemo(() => {
-    if (currentTableNumber === null) return [];
+  // const myOrders = useMemo(() => {
+  //   if (currentTableNumber === null) return [];
 
-    const my = orders.filter(order => 
-      Number(order.tableNumber) === currentTableNumber
-    );
+  //   const my = orders.filter(order => 
+  //     Number(order.tableNumber) === currentTableNumber
+  //   );
 
-    return sortOrdersByPriority(my);
-  }, [orders, currentTableNumber, sortOrdersByPriority]);
+  //   return sortOrdersByPriority(my);
+  // }, [orders, currentTableNumber, sortOrdersByPriority]);
+
+const myOrders = useMemo(() => {
+  if (!orders.length) return [];
+
+  const storedPhone = localStorage.getItem(`phone_${username}`);
+
+  console.log("📱 Stored phone:", storedPhone);
+
+  return sortOrdersByPriority(
+    orders.filter(order => {
+
+      // DINE IN
+      if (order.orderType === "DINE_IN") {
+        return Number(order.tableNumber) === currentTableNumber;
+      }
+
+      // ONLINE
+      if (order.orderType === "ONLINE") {
+        return order.phoneNumber === storedPhone;
+      }
+
+      return false;
+    })
+  );
+
+}, [orders, currentTableNumber, username, sortOrdersByPriority]);
+
 
   // ===============================
   // COUNT PENDING ORDERS AHEAD (DYNAMIC)
@@ -924,7 +955,7 @@ export default function OrderStatusPage() {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes slideUp {
           from {
             opacity: 0;

@@ -848,6 +848,11 @@ export default function CheckoutPage() {
       const res = await api.post(`/api/checkout/${username}`, payload);
 
       const { sessionId, sessionStatus } = res.data;
+      
+            // 🔥 SAVE PHONE FOR ONLINE TRACKING
+      if (orderType === "ONLINE" && details.phone) {
+        localStorage.setItem(`phone_${username}`, details.phone);
+      }
 
       if (orderType === "DINE_IN" && sessionId && sessionStatus === "ACTIVE") {
         localStorage.setItem(sessionKey, sessionId);
